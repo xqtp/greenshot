@@ -28,10 +28,10 @@ LanguageCodePage=1254
 [Messages]
 
 ; *** Uygulama başlıkları
-SetupAppTitle=Kurulum Yardımcısı
-SetupWindowTitle=%1 - Kurulum Yardımcısı
-UninstallAppTitle=Kaldırma Yardımcısı
-UninstallAppFullTitle=%1 Kaldırma Yardımcısı
+SetupAppTitle=Kurulum yardımcısı
+SetupWindowTitle=%1 - Kurulum yardımcısı
+UninstallAppTitle=Kaldırma yardımcısı
+UninstallAppFullTitle=%1 Kaldırma yardımcısı
 
 ; *** Çeşitli ortak metinler
 InformationTitle=Bilgi
@@ -74,7 +74,7 @@ PrivilegesRequiredOverrideCurrentUser=&Sadece benim için kur
 PrivilegesRequiredOverrideCurrentUserRecommended=&Sadece benim için kur (önerilen)
 
 ; *** Çeşitli hata metinleri
-ErrorCreatingDir=Kurulum yardımcısı "%1" klasörünü oluşturamadı.
+ErrorCreatingDir=Kurulum yardımcısı "%1" klasörünü oluşturamadı
 ErrorTooManyFilesInDir="%1" klasörü içinde çok sayıda dosya olduğundan bir dosya oluşturulamadı
 
 ; *** Ortak kurulum iletileri
@@ -162,7 +162,7 @@ DiskSpaceWarning=Kurulum için %1 KB boş alan gerekli, ancak seçilen sürücü
 DirNameTooLong=Klasör adı ya da yolu çok uzun.
 InvalidDirName=Klasör adı geçersiz.
 BadDirName32=Klasör adlarında şu karakterler bulunamaz:%n%n%1
-DirExistsTitle=Klasör zaten var"
+DirExistsTitle=Klasör zaten var
 DirExists=Klasör:%n%n%1%n%zaten var. Kurulum için bu klasörü kullanmak ister misiniz?
 DirDoesntExistTitle=Klasör mevcut değil
 DirDoesntExist=Klasör:%n%n%1%n%nmevcut değil.Klasör oluşturulsun mu?
@@ -227,8 +227,8 @@ WizardPreparing=Kuruluma hazırlanılıyor
 PreparingDesc=[name] bilgisayarınıza kurulmaya hazırlanıyor.
 PreviousInstallNotCompleted=Önceki bir programın kurulumu veya kaldırılması henüz tamamlanmadı. Bu işlemi tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor.%n%nBilgisayarınızı yeniden başlattıktan sonra, [name] kurulumunu tamamlamak için kurulumu tekrar çalıştırın.
 CannotContinue=Kuruluma devam edilemiyor. Çıkmak için lütfen İptal'e tıklayın.
-ApplicationsFound=Aşağıdaki uygulamalar, kurulumun güncellemesi gereken dosyaları kullanıyor. Kurulum yardımcısının bu uygulamaları otomatik olarak kapatmasına izin vermeniz önerilir.
-ApplicationsFound2=Aşağıdaki uygulamalar, kurulumun güncellemesi gereken dosyaları kullanıyor. Kurulum yardımcısının bu uygulamaları otomatik olarak kapatmasına izin vermeniz önerilir. Kurulum tamamlandıktan sonra, kurulum yardımcısı uygulamaları tekrar başlatmayı deneyecektir.
+ApplicationsFound=Aşağıdaki uygulamalar, Kurulum yardımcısı tarafından güncellenmesi gereken dosyaları kullanıyor. Kurulum yardımcısının bu uygulamaları otomatik olarak kapatmasına izin vermeniz önerilir.
+ApplicationsFound2=Aşağıdaki uygulamalar, Kurulum yardımcısı tarafından güncellenmesi gereken dosyaları kullanıyor. Kurulum yardımcısının bu uygulamaları otomatik olarak kapatmasına izin vermeniz önerilir. Kurulum tamamlandıktan sonra, Kurulum uygulamaları yeniden başlatmayı deneyecektir.
 CloseApplications=&Uygulamaları otomatik olarak kapat
 DontCloseApplications=Uygulamaları &kapatma
 ErrorCloseApplications=Kurulum yardımcısı tüm uygulamaları otomatik olarak kapatamadı. Devam etmeden önce, Kurulum tarafından güncellenecek dosyaları kullanan tüm uygulamaları kapatmanız önerilir.
@@ -296,34 +296,34 @@ ErrorRegWriteKey=Kayıt defteri anahtarı yazılırken hata oluştu:%n%1%2
 ErrorIniEntry="%1" dosyasına INI girişi oluşturulurken hata oluştu.
 
 ; *** Dosya kopyalama hataları
-FileAbortRetryIgnoreSkipNotRecommended=&Bu dosya atlansın (önerilmez)
-FileAbortRetryIgnoreIgnoreNotRecommended=&Sorun yok sayılıp devam edilsin (önerilmez)
+FileAbortRetryIgnoreSkipNotRecommended=&Bu dosyayı atla (önerilmez)
+FileAbortRetryIgnoreIgnoreNotRecommended=&Hatayı yok say ve devam et (önerilmez)
 SourceIsCorrupted=Kaynak dosya bozulmuş
-SourceDoesntExist="%1" kaynak dosyası bulunamadı
-ExistingFileReadOnly2=Var olan dosya salt okunabilir olarak işaretlenmiş olduğundan üzerine yazılamadı.
-ExistingFileReadOnlyRetry=&Salt okunur işareti kaldırılıp yeniden denensin
-ExistingFileReadOnlyKeepExisting=&Var olan dosya korunsun
-ErrorReadingExistingDest=Var olan dosya okunmaya çalışılırken bir sorun çıktı.
-FileExistsSelectAction=Yapılacak işlemi seçin
+SourceDoesntExist=Kaynak dosya "%1" mevcut değil
+ExistingFileReadOnly2=Mevcut dosya salt okunur olarak işaretlendiği için değiştirilemedi.
+ExistingFileReadOnlyRetry=&Salt-okunur özelliğini kaldır ve tekrar dene
+ExistingFileReadOnlyKeepExisting=&Mevcut dosyayı koru
+ErrorReadingExistingDest=Mevcut dosya okunurken bir hata oluştu:
+FileExistsSelectAction=İşlem seçin
 FileExists2=Dosya zaten var.
-FileExistsOverwriteExisting=&Var olan dosyanın üzerine yazılsın
-FileExistsKeepExisting=Var &olan dosya korunsun
-FileExistsOverwriteOrKeepAll=&Sonraki çakışmalarda da bu işlem yapılsın
-ExistingFileNewerSelectAction=Yapılacak işlemi seçin
-ExistingFileNewer2=Var olan dosya, kurulum yardımcısı tarafından yazılmaya çalışılandan daha yeni.
-ExistingFileNewerOverwriteExisting=&Var olan dosyanın üzerine yazılsın
-ExistingFileNewerKeepExisting=Var &olan dosya korunsun (önerilir)
-ExistingFileNewerOverwriteOrKeepAll=&Sonraki çakışmalarda bu işlem yapılsın
-ErrorChangingAttr=Var olan dosyanın öznitelikleri değiştirilirken bir sorun çıktı:
-ErrorCreatingTemp=Hedef klasörde bir dosya oluşturulurken bir sorun çıktı:
-ErrorReadingSource=Kaynak dosya okunurken bir sorun çıktı:
-ErrorCopying=Dosya kopyalanırken bir sorun çıktı:
-ErrorReplacingExistingFile=Var olan dosya değiştirilirken bir sorun çıktı:
+FileExistsOverwriteExisting=&Mevcut dosyanın üzerine yaz
+FileExistsKeepExisting=&Mevcut dosyayı koru
+FileExistsOverwriteOrKeepAll=&Sonraki çakışmalarda da aynı işlemi yap
+ExistingFileNewerSelectAction=İşlem seçin
+ExistingFileNewer2=Mevcut dosya, Kurulumun yüklemeye çalıştığı dosyadan daha yeni.
+ExistingFileNewerOverwriteExisting=&Mevcut dosyanın üzerine yaz
+ExistingFileNewerKeepExisting=&Mevcut dosyayı koru (önerilen)
+ExistingFileNewerOverwriteOrKeepAll=&Sonraki çakışmalarda da aynı işlemi yap
+ErrorChangingAttr=Mevcut dosyanın öznitelikleri değiştirilirken bir hata oluştu:
+ErrorCreatingTemp=Hedef dizinde dosya oluşturulurken bir hata oluştu:
+ErrorReadingSource=Kaynak dosya okunurken bir hata oluştu:
+ErrorCopying=Dosya kopyalanırken bir hata oluştu:
+ErrorReplacingExistingFile=Mevcut dosya değiştirilirken bir hata oluştu:
 ErrorRestartReplace=Yeniden başlatmada üzerine yazılamadı:
-ErrorRenamingTemp=Hedef klasördeki bir dosyanın adı değiştirilirken sorun çıktı:
-ErrorRegisterServer=DLL/OCX kayıt edilemedi: %1
-ErrorRegSvr32Failed=RegSvr32 işlemi şu kod ile tamamlanamadı: %1
-ErrorRegisterTypeLib=Tür kitaplığı kayıt defterine eklenemedi: %1
+ErrorRenamingTemp=Hedef klasördeki bir dosya yeniden adlandırılırken bir hata oluştu:
+ErrorRegisterServer=DLL/OCX kaydedilemedi: %1
+ErrorRegSvr32Failed=RegSvr32 başarısız oldu, çıkış kodu: %11
+ErrorRegisterTypeLib=Tür kütüphanesi kaydedilemedi: %1
 
 ; *** Kaldırma sırasında görüntülenecek ad işaretleri
 ; used for example as 'My Program (32-bit)'
@@ -336,29 +336,29 @@ UninstallDisplayNameMarkAllUsers=Tüm kullanıcılar
 UninstallDisplayNameMarkCurrentUser=Geçerli kullanıcı
 
 ; *** Kurulum sonrası hataları
-ErrorOpeningReadme=README dosyası açılırken bir sorun çıktı.
-ErrorRestartingComputer=Kurulum yardımcısı bilgisayarınızı yeniden başlatamıyor. Lütfen bilgisayarınızı yeniden başlatın.
+ErrorOpeningReadme=README dosyası açılırken bir hata oluştu.
+ErrorRestartingComputer=Kurulum bilgisayarı yeniden başlatamadı. Lütfen bu işlemi elle yapın.
 
 ; *** Kaldırma yardımcısı iletileri
 UninstallNotFound="%1" dosyası bulunamadı. Uygulama kaldırılamıyor.
-UninstallOpenError="%1" dosyası açılamadı. Uygulama kaldırılamıyor.
-UninstallUnsupportedVer="%1" uygulama kaldırma günlük dosyasının biçimi, bu kaldırma yardımcısı sürümü tarafından anlaşılamadı. Uygulama kaldırılamıyor.
-UninstallUnknownEntry=Kaldırma günlüğünde bilinmeyen bir kayıt (%1) bulundu.
+UninstallOpenError="%1" dosyası açılamadı. Uygulama kaldırılamıyor
+UninstallUnsupportedVer=Kaldırma günlüğü dosyası "%1" bu kaldırıcı sürümü tarafından tanınmayan bir biçimde. Kaldırma işlemi yapılamıyor
+UninstallUnknownEntry=Kaldırma günlüğünde bilinmeyen bir kayıt (%1) bulundu
 ConfirmUninstall=%1 uygulamasını tüm bileşenleri ile birlikte tamamen kaldırmak istediğinize emin misiniz?
-UninstallOnlyOnWin64=Bu kurulum yalnız 64 bit Windows üzerinden kaldırılabilir.
+UninstallOnlyOnWin64=Bu kurulum yalnız 64 bit Windows üzerinde kaldırılabilir.
 OnlyAdminCanUninstall=Bu kurulum yalnız yönetici haklarına sahip bir kullanıcı tarafından kaldırılabilir.
 UninstallStatusLabel=Lütfen %1 uygulaması bilgisayarınızdan kaldırılırken bekleyin.
 UninstalledAll=%1 uygulaması bilgisayarınızdan kaldırıldı.
-UninstalledMost=%1 uygulaması kaldırıldı.%n%nBazı bileşenler kaldırılamadı. Bunları el ile silebilirsiniz.
+UninstalledMost=%1 uygulaması kaldırıldı.%n%nBazı bileşenler kaldırılamadı. Bunları elle silebilirsiniz.
 UninstalledAndNeedsRestart=%1 kaldırma işleminin tamamlanması için bilgisayarınızın yeniden başlatılması gerekli.%n%nŞimdi yeniden başlatmak ister misiniz?
-UninstallDataCorrupted="%1" dosyası bozulmuş. Kaldırılamıyor.
+UninstallDataCorrupted="%1" dosyası bozulmuş. Kaldırılamıyor
 
 ; *** Kaldırma aşaması iletileri
-ConfirmDeleteSharedFileTitle=Paylaşılan Dosya Silinsin mi?
-ConfirmDeleteSharedFile2=Sisteme göre, paylaşılan şu dosya başka bir uygulama tarafından kullanılmıyor ve kaldırılabilir. Bu paylaşılmış dosyayı silmek ister misiniz?%n%nBu dosya, başka herhangi bir uygulama tarafından kullanılıyor ise, silindiğinde diğer uygulama düzgün çalışmayabilir. Emin değilseniz Hayır üzerine tıklayın. Dosyayı sisteminizde bırakmanın bir zararı olmaz.
+ConfirmDeleteSharedFileTitle=Paylaşılan dosya silinsin mi?
+ConfirmDeleteSharedFile2=Sistem, aşağıdaki paylaşılan dosyanın artık hiçbir program tarafından kullanılmadığını belirtiyor. Kaldırıcı bu paylaşılan dosyayı silsin mi?%n%nEğer bu dosya hâlâ başka bir program tarafından kullanılıyorsa ve silinirse, o programlar düzgün çalışmayabilir. Emin değilseniz Hayır'ı seçin. Dosyayı sistemde bırakmak hiçbir zarara yol açmaz.
 SharedFileNameLabel=Dosya adı:
 SharedFileLocationLabel=Konum:
-WizardUninstalling=Kaldırma Durumu
+WizardUninstalling=Kaldırma durumu
 StatusUninstalling=%1 kaldırılıyor...
 
 ; *** Kapatmayı engelleme nedenleri
@@ -372,11 +372,11 @@ ShutdownBlockReasonUninstallingApp=%1 kaldırılıyor.
 
 NameAndVersion=%1 %2 sürümü
 AdditionalIcons=Ek simgeler:
-CreateDesktopIcon=Masaüstü simg&esi oluşturulsun
-CreateQuickLaunchIcon=Hızlı Başlat simgesi &oluşturulsun
+CreateDesktopIcon=Masaüstü simg&esi oluştur
+CreateQuickLaunchIcon=Hızlı Başlat simgesi &oluştur
 ProgramOnTheWeb=%1 Web Sitesi
-UninstallProgram=%1 Uygulamasını Kaldır
-LaunchProgram=%1 Uygulamasını Çalıştır
+UninstallProgram=%1 uygulamasını kaldır
+LaunchProgram=%1 uygulamasını çalıştır
 AssocFileExtension=%1 &uygulaması ile %2 dosya uzantısı ilişkilendirilsin
 AssocingFileExtension=%1 uygulaması ile %2 dosya uzantısı ilişkilendiriliyor...
 AutoStartProgramGroupDescription=Başlangıç:
