@@ -163,9 +163,9 @@ DirNameTooLong=Klasör adı ya da yolu çok uzun.
 InvalidDirName=Klasör adı geçersiz.
 BadDirName32=Klasör adlarında şu karakterler bulunamaz:%n%n%1
 DirExistsTitle=Klasör zaten var
-DirExists=Klasör:%n%n%1%n%zaten var. Kurulum için bu klasörü kullanmak ister misiniz?
+DirExists=Klasör:%n%n%1%n%nzaten var. Kurulum için bu klasörü kullanmak ister misiniz?
 DirDoesntExistTitle=Klasör mevcut değil
-DirDoesntExist=Klasör:%n%n%1%n%nmevcut değil.Klasör oluşturulsun mu?
+DirDoesntExist=Klasör:%n%n%1%n%nmevcut değil. Klasör oluşturulsun mu?
 
 ; *** "Bileşenleri Seçin" sayfası
 WizardSelectComponents=Bileşenleri seçin
@@ -245,7 +245,7 @@ FinishedLabel=Kurulum, bilgisayarınıza [name] uygulamasını yüklemeyi tamaml
 ClickFinish=Kurulumdan çıkmak için Bitti'ye tıklayın.
 FinishedRestartLabel=[name] kurulumunun tamamlanması için, bilgisayarınız yeniden başlatılmalı. Şimdi yeniden başlatmak ister misiniz?
 FinishedRestartMessage=[name] kurulumunun tamamlanması için, bilgisayarınız yeniden başlatılmalı.%n%nŞimdi yeniden başlatmak ister misiniz?
-ShowReadmeCheck=Evet README dosyası görüntülensin
+ShowReadmeCheck=Evet, README dosyası görüntülensin
 YesRadio=&Evet, bilgisayar şimdi yeniden başlatılsın
 NoRadio=&Hayır, bilgisayarı daha sonra yeniden başlatacağım
 ; used for example as 'Run MyProg.exe'
@@ -288,12 +288,12 @@ ErrorFunctionFailedWithMessage=%1 başarısız oldu; kod %2.%n%3
 ErrorExecutingProgram=Şu dosya yürütülemedi:%n%1
 
 ; *** Kayıt defteri hataları
-ErrorRegOpenKey=Kayıt defteri anahtarı açılırken hata oluştu:%n%1%2
-ErrorRegCreateKey=Kayıt defteri anahtarı eklenirken hata oluştu:%n%1%2
-ErrorRegWriteKey=Kayıt defteri anahtarı yazılırken hata oluştu:%n%1%2
+ErrorRegOpenKey=Kayıt defteri anahtarı açılırken hata oluştu:%n%1\%2
+ErrorRegCreateKey=Kayıt defteri anahtarı eklenirken hata oluştu:%n%1\%2
+ErrorRegWriteKey=Kayıt defteri anahtarı yazılırken hata oluştu:%n%1\%2
 
 ; *** INI hataları
-ErrorIniEntry="%1" dosyasına INI girişi oluşturulurken hata oluştu.
+ErrorIniEntry="%1" dosyasında INI girişi oluşturulurken hata oluştu.
 
 ; *** Dosya kopyalama hataları
 FileAbortRetryIgnoreSkipNotRecommended=&Bu dosyayı atla (önerilmez)
@@ -301,7 +301,7 @@ FileAbortRetryIgnoreIgnoreNotRecommended=&Hatayı yok say ve devam et (önerilme
 SourceIsCorrupted=Kaynak dosya bozulmuş
 SourceDoesntExist=Kaynak dosya "%1" mevcut değil
 ExistingFileReadOnly2=Mevcut dosya salt okunur olarak işaretlendiği için değiştirilemedi.
-ExistingFileReadOnlyRetry=&Salt-okunur özelliğini kaldır ve tekrar dene
+ExistingFileReadOnlyRetry=&Salt okunur özelliğini kaldır ve tekrar dene
 ExistingFileReadOnlyKeepExisting=&Mevcut dosyayı koru
 ErrorReadingExistingDest=Mevcut dosya okunurken bir hata oluştu:
 FileExistsSelectAction=İşlem seçin
@@ -322,7 +322,7 @@ ErrorReplacingExistingFile=Mevcut dosya değiştirilirken bir hata oluştu:
 ErrorRestartReplace=Yeniden başlatmada üzerine yazılamadı:
 ErrorRenamingTemp=Hedef klasördeki bir dosya yeniden adlandırılırken bir hata oluştu:
 ErrorRegisterServer=DLL/OCX kaydedilemedi: %1
-ErrorRegSvr32Failed=RegSvr32 başarısız oldu, çıkış kodu: %11
+ErrorRegSvr32Failed=RegSvr32 başarısız oldu, çıkış kodu: %1
 ErrorRegisterTypeLib=Tür kütüphanesi kaydedilemedi: %1
 
 ; *** Kaldırma sırasında görüntülenecek ad işaretleri
