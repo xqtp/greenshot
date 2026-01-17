@@ -11,7 +11,7 @@
 [LangOptions]
 ; The following three entries are very important. Be sure to read and 
 ; understand the '[LangOptions] section' topic in the help file.
-LanguageName=T<00FC>rk<00E7>e
+LanguageName=Türkçe
 LanguageID=$041f
 LanguageCodePage=1254
 ; If the language you are translating to requires special font faces or
@@ -42,7 +42,6 @@ ErrorTitle=Hata
 SetupLdrStartupMessage=%1 uygulaması kurulacak. Devam etmek istiyor musunuz?
 LdrCannotCreateTemp=Geçici dosya oluşturulamıyor. Kurulum iptal edildi
 LdrCannotExecTemp=Geçici dizindeki dosya yürütülemiyor. Kurulum iptal edildi
-HelpTextNote=
 
 ; *** Başlangıç hata iletileri
 LastErrorMessage=%1.%n%nHata %2: %3
@@ -57,7 +56,7 @@ NotOnThisPlatform=Bu uygulama, %1 üzerinde çalışmaz.
 OnlyOnThisPlatform=Bu uygulama, %1 üzerinde çalıştırılmalıdır.
 OnlyOnTheseArchitectures=Bu uygulama, yalnız şu işlemci mimarileri için tasarlanmış Windows sürümleriyle çalışır:%n%n%1
 WinVersionTooLowError=Bu uygulama için %1 sürüm %2 ya da üzeri gereklidir.
-WinVersionTooHighError=Bu uygulama, '%1' sürüm '%2' ya da üzerine kurulamaz.
+WinVersionTooHighError=Bu uygulama, %1 sürüm %2 ya da üzerine kurulamaz.
 AdminPrivilegesRequired=Bu programı yüklerken yönetici olarak oturum açmış olmanız gerekir.
 PowerUserPrivilegesRequired=Bu uygulamayı kurarken, yönetici ya da Power Users grubunun bir üyesi olarak oturum açmış olmanız gerekir.
 SetupAppRunningError=Kurulum yardımcısı, %1 uygulamasının şu anda çalıştığını tespit etti.%n%nLütfen uygulamanın tüm pencerelerini kapatın ve devam etmek için Tamam'a, çıkmak için İptal'e tıklayın.
@@ -96,7 +95,7 @@ ButtonYes=E&vet
 ButtonYesToAll=&Tümüne evet
 ButtonNo=&Hayır
 ButtonNoToAll=Tümüne ha&yır
-ButtonFinish=&Bitti
+ButtonFinish=&Son
 ButtonBrowse=&Göz at...
 ButtonWizardBrowse=Göz a&t...
 ButtonNewFolder=Ye&ni klasör oluştur
@@ -110,7 +109,7 @@ ClickNext=Devam etmek için İleri'ye, kurulumdan çıkmak için İptal'e tıkla
 BeveledLabel=
 BrowseDialogTitle=Klasöre göz at
 BrowseDialogLabel=Aşağıdaki listeden bir klasör seçin ve Tamam'a tıklayın.
-NewFolderName=Yeni klasör 
+NewFolderName=Yeni klasör
 
 ; *** "Hoş geldiniz" sayfası
 WelcomeLabel1=[name] Kurulum yardımcısına hoş geldiniz
@@ -154,11 +153,11 @@ SelectDirBrowseLabel=Devam etmek için İleri'ye tıklayın. Farklı bir klasör
 DiskSpaceGBLabel=En az [gb] GB boş disk alanı gereklidir.
 DiskSpaceMBLabel=En az [mb] MB boş disk alanı gereklidir.
 CannotInstallToNetworkDrive=Uygulama bir ağ sürücüsü üzerine kurulamaz.
-CannotInstallToUNCPath=Kurulum, UNC yoluna yüklenemez.
-InvalidPath=Sürücü adı ile tam yolu yazmalısınız; örneğin: %n%nC:\APP%n%n ya da şu şekilde bir UNC yolu:%n%n\\sunucu\paylaşım
+CannotInstallToUNCPath=Kurulum, UNC yoluna kurulamaz.
+InvalidPath=Sürücü adı ile tam yolu yazmalısınız; örneğin:%n%nC:\APP%n%nya da şu şekilde bir UNC yolu:%n%n\\sunucu\paylaşım
 InvalidDrive=Seçtiğiniz sürücü veya UNC paylaşımı mevcut değil veya erişilebilir değil. Lütfen başka bir sürücü seçin.
 DiskSpaceWarningTitle=Yetersiz disk alanı
-DiskSpaceWarning=Kurulum için %1 KB boş alan gerekli, ancak seçilen sürücüde yalnız %2 KB boş alan var.%n%nYine de devam etmek istiyor musunuz?
+DiskSpaceWarning=Kurulum için en az %1 KB boş alan gerekli, ancak seçilen sürücüde sadece %2 KB boş alan var.%n%nYine de devam edilsin mi?
 DirNameTooLong=Klasör adı ya da yolu çok uzun.
 InvalidDirName=Klasör adı geçersiz.
 BadDirName32=Klasör adlarında şu karakterler bulunamaz:%n%n%1
@@ -176,7 +175,7 @@ FullInstallation=Tam kurulum
 CompactInstallation=Kompakt kurulum
 CustomInstallation=Özel kurulum
 NoUninstallWarningTitle=Bileşenler zaten var
-NoUninstallWarning=Kurulum, aşağıdaki bileşenlerin bilgisayarınızda zaten yüklü olduğunu tespit etti:%n%n%1%n%nBu bileşenlerin işaretini kaldırmak, onları kaldırmaz.%n%nYine de devam etmek ister misiniz?
+NoUninstallWarning=Kurulum, aşağıdaki bileşenlerin bilgisayarınızda zaten kurulu olduğunu tespit etti:%n%n%1%n%nBu bileşenlerin seçimini kaldırmak, onları kaldırmaz.%n%nYine de devam etmek ister misiniz?
 ComponentSize1=%1 KB
 ComponentSize2=%1 MB
 ComponentsDiskSpaceGBLabel=Seçili bileşenler için diskte en az [gb] GB boş alan bulunması gerekli.
@@ -228,7 +227,7 @@ PreparingDesc=[name] bilgisayarınıza kurulmaya hazırlanıyor.
 PreviousInstallNotCompleted=Önceki bir programın kurulumu veya kaldırılması henüz tamamlanmadı. Bu işlemi tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor.%n%nBilgisayarınızı yeniden başlattıktan sonra, [name] kurulumunu tamamlamak için kurulumu tekrar çalıştırın.
 CannotContinue=Kuruluma devam edilemiyor. Çıkmak için lütfen İptal'e tıklayın.
 ApplicationsFound=Aşağıdaki uygulamalar, Kurulum yardımcısı tarafından güncellenmesi gereken dosyaları kullanıyor. Kurulum yardımcısının bu uygulamaları otomatik olarak kapatmasına izin vermeniz önerilir.
-ApplicationsFound2=Aşağıdaki uygulamalar, Kurulum yardımcısı tarafından güncellenmesi gereken dosyaları kullanıyor. Kurulum yardımcısının bu uygulamaları otomatik olarak kapatmasına izin vermeniz önerilir. Kurulum tamamlandıktan sonra, Kurulum uygulamaları yeniden başlatmayı deneyecektir.
+ApplicationsFound2=Aşağıdaki uygulamalar, Kurulum yardımcısı tarafından güncellenmesi gereken dosyaları kullanıyor. Kurulum yardımcısının bu uygulamaları otomatik olarak kapatmasına izin vermeniz önerilir. Kurulum tamamlandıktan sonra, Kurulum yardımcısı uygulamaları yeniden başlatmayı deneyecektir.
 CloseApplications=&Uygulamaları otomatik olarak kapat
 DontCloseApplications=Uygulamaları &kapatma
 ErrorCloseApplications=Kurulum yardımcısı tüm uygulamaları otomatik olarak kapatamadı. Devam etmeden önce, Kurulum tarafından güncellenecek dosyaları kullanan tüm uygulamaları kapatmanız önerilir.
@@ -241,8 +240,8 @@ InstallingLabel=Lütfen [name] bilgisayarınıza kurulurken bekleyin.
 ; *** "Kurulum Tamamlandı" sayfası
 FinishedHeadingLabel=[name] kurulum yardımcısı tamamlanıyor
 FinishedLabelNoIcons=Kurulum yardımcısı, [name] uygulamasını bilgisayarınıza kurma işlemini bitirdi.
-FinishedLabel=Kurulum, bilgisayarınıza [name] uygulamasını yüklemeyi tamamladı. Uygulama, kurulan simgeler seçilerek başlatılabilir.
-ClickFinish=Kurulumdan çıkmak için Bitti'ye tıklayın.
+FinishedLabel=Kurulum, bilgisayarınıza [name] uygulamasını kurmayı tamamladı. Uygulama, kurulan simgeler seçilerek başlatılabilir.
+ClickFinish=Kurulumdan çıkmak için Son'a tıklayın.
 FinishedRestartLabel=[name] kurulumunun tamamlanması için, bilgisayarınız yeniden başlatılmalı. Şimdi yeniden başlatmak ister misiniz?
 FinishedRestartMessage=[name] kurulumunun tamamlanması için, bilgisayarınız yeniden başlatılmalı.%n%nŞimdi yeniden başlatmak ister misiniz?
 ShowReadmeCheck=Evet, README dosyası görüntülensin
@@ -310,7 +309,7 @@ FileExistsOverwriteExisting=&Mevcut dosyanın üzerine yaz
 FileExistsKeepExisting=&Mevcut dosyayı koru
 FileExistsOverwriteOrKeepAll=&Sonraki çakışmalarda da aynı işlemi yap
 ExistingFileNewerSelectAction=İşlem seçin
-ExistingFileNewer2=Mevcut dosya, Kurulumun yüklemeye çalıştığı dosyadan daha yeni.
+ExistingFileNewer2=Mevcut dosya, Kurulumun kurmaya çalıştığı dosyadan daha yeni.
 ExistingFileNewerOverwriteExisting=&Mevcut dosyanın üzerine yaz
 ExistingFileNewerKeepExisting=&Mevcut dosyayı koru (önerilen)
 ExistingFileNewerOverwriteOrKeepAll=&Sonraki çakışmalarda da aynı işlemi yap
@@ -377,8 +376,8 @@ CreateQuickLaunchIcon=Hızlı Başlat simgesi &oluştur
 ProgramOnTheWeb=%1 Web Sitesi
 UninstallProgram=%1 uygulamasını kaldır
 LaunchProgram=%1 uygulamasını çalıştır
-AssocFileExtension=%1 &uygulaması ile %2 dosya uzantısı ilişkilendirilsin
-AssocingFileExtension=%1 uygulaması ile %2 dosya uzantısı ilişkilendiriliyor...
+AssocFileExtension=%1 ile %2 uzantısı ilişkilendirilsin
+AssocingFileExtension=%1 ile %2 uzantısı ilişkilendiriliyor...
 AutoStartProgramGroupDescription=Başlangıç:
 AutoStartProgram=%1 otomatik olarak başlatılsın
 AddonHostProgramNotFound=%1 seçtiğiniz klasörde bulunamadı.%n%nYine de devam etmek istiyor musunuz?
