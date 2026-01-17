@@ -173,7 +173,7 @@ SelectComponentsDesc=Hangi bileşenler kurulacak?
 SelectComponentsLabel2=Kurmak istediğiniz bileşenleri seçin; kurmak istemediklerinizi boş bırakın. Devam etmeye hazır olduğunuzda İleri'ye tıklayın.
 FullInstallation=Tam kurulum
 ; Mümkünse 'Compact' ifadesini kendi dilinizde 'Minimal' anlamında çevirmeyin
-CompactInstallation=Normal kurulum
+CompactInstallation=Kompakt kurulum
 CustomInstallation=Özel kurulum
 NoUninstallWarningTitle=Bileşenler zaten var
 NoUninstallWarning=Kurulum, aşağıdaki bileşenlerin bilgisayarınızda zaten yüklü olduğunu tespit etti:%n%n%1%n%nBu bileşenlerin işaretini kaldırmak, onları kaldırmaz.%n%nYine de devam etmek ister misiniz?
