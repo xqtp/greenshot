@@ -28,6 +28,7 @@
     <resource name="label_argument">
       Parametreler
     </resource>
+    <resource name="label_outputimageformat">Görüntü biçimi</resource>
     <resource name="label_information">
       {0}, ekran görüntünüzün dosya adıdır
     </resource>
