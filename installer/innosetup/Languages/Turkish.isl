@@ -11,7 +11,7 @@
 [LangOptions]
 ; The following three entries are very important. Be sure to read and 
 ; understand the '[LangOptions] section' topic in the help file.
-LanguageName=Türkçe
+LanguageName=T<00FC>rk<00E7>e
 LanguageID=$041f
 LanguageCodePage=1254
 ; If the language you are translating to requires special font faces or
@@ -235,7 +235,7 @@ PrepareToInstallNeedsRestart=Kurulum için bilgisayarın yeniden başlatılması
 
 ; *** "Kuruluyor" sayfası
 WizardInstalling=Kuruluyor
-InstallingLabel=Lütfen [name] bilgisayarınıza kurulurken bekleyin.
+InstallingLabel=Lütfen [name] kurulurken bekleyin.
 
 ; *** "Kurulum Tamamlandı" sayfası
 FinishedHeadingLabel=[name] kurulum yardımcısı tamamlanıyor
