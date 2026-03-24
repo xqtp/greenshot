@@ -165,10 +165,10 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="error">Hata</resource>
 		<resource name="error_multipleinstances">Greenshot zaten çalışıyor.</resource>
 		<resource name="error_nowriteaccess">Dosya {0} konumuna kaydedilemiyor.
-Seçili kayıt yolunun yazılabilir olduğundan emin olun.</resource>
+Seçilen depolama konumunun yazma izinlerini kontrol edin.</resource>
 		<resource name="error_openfile">"{0}" dosyası açılamadı.</resource>
 		<resource name="error_openlink">'{0}' bağlantısı açılamadı.</resource>
-		<resource name="error_save">Ekran görüntüsü kaydedilemedi, lütfen uygun bir yer seçin.</resource>
+		<resource name="error_save">Ekran görüntüsü kaydedilemedi, uygun bir kaydetme konumu seçin.</resource>
     <resource name="error_save_invalid_chars">Oluşturulan dosya veya klasör adı geçersiz. Lütfen dosya adı modelini düzeltin ve ardından tekrar deneyin.</resource>
 		<resource name="expertsettings">Gelişmiş Ayarlar</resource>
 		<resource name="expertsettings_autoreducecolors">Renkler 256'dan az ise ve görüntü 8 bitten büyükse 8 bitlik bir görüntü oluştur.</resource>
@@ -270,6 +270,10 @@ Greenshot ile dinamik klasör oluşturabilirsiniz. Klasör ve dosya adını ayı
 		<resource name="settings_tooltip_primaryimageformat">Varsayılan görüntü biçimi</resource>
 		<resource name="settings_tooltip_registerhotkeys">Greenshot'ın başlangıçta Prnt, Ctrl + Print, Alt + Prnt kısayollarını sistem genelinde kullanıp kullanmayacağını ve program kapanana kadar aktif kalıp kalmayacağını belirler.</resource>
 		<resource name="settings_tooltip_storagelocation">Ekran görüntülerinin varsayılan olarak kaydedileceği konum. (Masaüstünü kullanmak için boş bırakın)</resource>
+        <resource name="settings_storagelocation_folder_error">Klasör seçici açılamadı.
+
+Depolama konumu Belgeler klasörünüz olarak ayarlandı. Farklı bir yol girmek isterseniz kutuya doğrudan yazın.</resource>
+        <resource name="settings_storagelocation_folder_error_title">Depolama konumu</resource>
 		<resource name="settings_usedefaultproxy">Varsayılan sistem proxy'sini kullan</resource>
 		<resource name="settings_visualization">Efektler</resource>
 		<resource name="settings_waittime">Yakalamadan önce beklenecek milisaniye</resource>
