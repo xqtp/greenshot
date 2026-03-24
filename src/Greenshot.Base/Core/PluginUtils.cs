@@ -24,7 +24,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using Dapplo.Windows.Icons;
 using Greenshot.Base.IniFile;
@@ -169,6 +168,21 @@ namespace Greenshot.Base.Core
             catch (Exception exIcon)
             {
                 Log.Error("error retrieving icon: ", exIcon);
+            }
+
+            // Fallback: use the Windows shell-associated icon (handles exes with no embedded icon, e.g. Windows curl.exe)
+            try
+            {
+                var shellIcon = Icon.ExtractAssociatedIcon(path);
+                if (shellIcon != null)
+                {
+                    Log.DebugFormat("Loaded shell icon for {0}", path);
+                    return shellIcon.ToBitmap();
+                }
+            }
+            catch (Exception exShell)
+            {
+                Log.Warn("error retrieving shell icon: ", exShell);
             }
 
             return null;
