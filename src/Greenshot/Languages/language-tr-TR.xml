@@ -14,9 +14,9 @@ GNU Genel Kamu Lisansı hakkında ayrıntılar:</resource>
 		<resource name="bugreport_info">Beklenmeyen bir hata oluştu.
 
 Bu hatayı düzeltmemize yardımcı olabilirsiniz. 
-Lütfen aşağıdaki bağlantıdan hata raporu oluşturun ve metin kutusundaki içeriği açıklamaya yapıştırın.
+Lütfen aşağıdaki bağlantıya giderek yeni bir hata raporu oluşturun ve metin kutusundaki içeriği açıklamaya yapıştırın.
 
-Anlamlı bir özet ekleyin ve sorunu tekrar oluşturmak için faydalı bilgileri paylaşın.
+Kısa bir özet ekleyin ve sorunu yeniden oluşturmak için faydalı bilgileri paylaşın.
 Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz çok seviniriz. (Arama özelliğini kullanarak bunu hızlıca yapabilirsiniz.) Teşekkürler!</resource>
 		<resource name="bugreport_title">Hata</resource>
 		<resource name="CANCEL">İptal</resource>
