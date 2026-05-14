@@ -280,7 +280,7 @@ Greenshot ile dinamik klasör oluşturabilirsiniz. Klasör ve dosya adını ayı
 		<resource name="settings_registerhotkeys">Kısayol tuşlarını etkinleştir</resource>
 		<resource name="settings_showflashlight">Flaş etkisi</resource>
 		<resource name="settings_shownotify">Bildirimleri göster</resource>
-        <resource name="settings_zoom">Büyüteçi göster</resource>
+        <resource name="settings_zoom">Büyüteci göster</resource>
 		<resource name="settings_storagelocation">Kayıt yeri</resource>
 		<resource name="settings_title">Ayarlar</resource>
 		<resource name="settings_tooltip_filenamepattern">Görüntüleri kaydederken dosya adlarını belirleyen kalıp</resource>
