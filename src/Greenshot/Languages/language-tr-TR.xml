@@ -158,7 +158,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="editor_preview_quality">Ön izleme kalitesi</resource>
 		<resource name="editor_print">Yazdır</resource>
 		<resource name="editor_remove_transparency">Saydamlığı kaldır</resource>
-		<resource name="editor_redo">Yeniden yap {0}</resource>
+		<resource name="editor_redo">Yinele {0}</resource>
 		<resource name="editor_resetsize">Boyutu sıfırla</resource>
         <resource name="editor_resize_percent">Yüzde</resource>
         <resource name="editor_resize_pixel">Piksel</resource>
