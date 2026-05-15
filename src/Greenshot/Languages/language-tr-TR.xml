@@ -315,21 +315,21 @@ Greenshot özellikleri, kısayol tuşları olmadan sistem tepsisi menüsünden k
     <resource name="editor_dropshadow_settings">Gölge ayarları</resource>
     <resource name="editor_dropshadow_thickness">Gölge kalınlığı</resource>
 
-    <resource name="editor_tornedge_horizontaltoothrange">Yatay eksende yırtık yoğunluğu</resource>
+    <resource name="editor_tornedge_horizontaltoothrange">Yatay yırtık aralığı</resource>
     <resource name="editor_tornedge_settings">Yırtık kenar ayarları</resource>
     <resource name="editor_tornedge_toothsize">Yırtıkların boyutu</resource>
-    <resource name="editor_tornedge_verticaltoothrange">Dikey eksende yırtık yoğunluğu</resource>
-    <resource name="editor_tornedge_all">Bütün kenarlara uygula</resource>
-    <resource name="editor_tornedge_left">Sol tarafa</resource>
-    <resource name="editor_tornedge_right">Sağ tarafa</resource>
-    <resource name="editor_tornedge_top">Üst tarafa</resource>
-    <resource name="editor_tornedge_bottom">Alt tarafa</resource>
+    <resource name="editor_tornedge_verticaltoothrange">Dikey yırtık aralığı</resource>
+    <resource name="editor_tornedge_all">Tüm kenarlara uygula</resource>
+    <resource name="editor_tornedge_left">Sol kenara</resource>
+    <resource name="editor_tornedge_right">Sağ kenara</resource>
+    <resource name="editor_tornedge_top">Üst kenara</resource>
+    <resource name="editor_tornedge_bottom">Alt kenara</resource>
     <resource name="editor_tornedge_shadow">Gölge oluştur</resource>
     
-    <resource name="editor_counter">Rakam ekle (I)</resource>
+    <resource name="editor_counter">Sayaç ekle (I)</resource>
     <resource name="editor_speechbubble">Konuşma balonu ekle (S)</resource>
 
-    <resource name="editor_resize">Yeniden Boyutlandır (Z)</resource>
+    <resource name="editor_resize">Yeniden boyutlandır (Z)</resource>
     <resource name="editor_resize_settings">Yeniden boyutlandırma ayarları</resource>
     <resource name="editor_resize_aspectratio">En boy oranını koru</resource>
     <resource name="editor_resize_width">Genişlik</resource>
