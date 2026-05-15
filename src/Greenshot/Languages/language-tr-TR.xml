@@ -192,7 +192,7 @@ Seçilen depolama konumunun yazma izinlerini kontrol edin.</resource>
 		<resource name="expertsettings_autoreducecolors">Renkler 256'dan az ise ve görüntü 8 bitten büyükse 8 bitlik bir görüntü oluştur.</resource>
 		<resource name="expertsettings_checkunstableupdates">Kararsız güncelleştirmeleri kontrol et</resource>
 		<resource name="expertsettings_clipboardformats">Pano biçimleri</resource>
-		<resource name="expertsettings_counter">Dosya adı şablonundaki ${NUM} numarası</resource>
+		<resource name="expertsettings_counter">Dosya adı biçimindeki ${NUM} sayacı</resource>
 		<resource name="expertsettings_enableexpert">Ne yaptığımı biliyorum!</resource>
 		<resource name="expertsettings_footerpattern">Yazıcı altbilgi şablonu</resource>
 		<resource name="expertsettings_minimizememoryfootprint">Bellek kullanımını azaltın, fakat performansı düşürür (önerilmez).</resource>
