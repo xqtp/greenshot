@@ -207,10 +207,10 @@ Seçilen depolama konumunun yazma izinlerini kontrol edin.</resource>
 		<resource name="jpegqualitydialog_choosejpegquality">Lütfen görüntünüz için JPEG kalitesini seçin.</resource>
 		<resource name="OK">Tamam</resource>
 		<resource name="print_error">Yazdırmaya çalışırken bir hata oldu.</resource>
-		<resource name="printoptions_allowcenter">Sayfada ortala</resource>
-		<resource name="printoptions_allowenlarge">Kağıt boyutuna göre büyüt</resource>
+		<resource name="printoptions_allowcenter">Çıktıyı sayfa ortasına hizala</resource>
+		<resource name="printoptions_allowenlarge">Kağıt boyutuna sığdırmak için büyüt</resource>
 		<resource name="printoptions_allowrotate">Sayfa yönüne göre döndür</resource>
-		<resource name="printoptions_allowshrink">Kağıt boyutuna göre küçült</resource>
+		<resource name="printoptions_allowshrink">Kağıt boyutuna sığdırmak için küçült</resource>
     <resource name="printoptions_colors">Renk ayarları</resource>
 	<resource name="printoptions_dontaskagain">Bu ayarları varsayılan olarak kaydet ve bir daha sorma</resource>
 		<resource name="printoptions_inverted">Ters çevrilmiş renklerle yazdır</resource>
