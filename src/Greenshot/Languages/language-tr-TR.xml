@@ -230,7 +230,7 @@ Seçilen depolama konumunun yazma izinlerini kontrol edin.</resource>
 		<resource name="settings_capture">Yakala</resource>
 		<resource name="settings_capture_mousepointer">Fare imlecini yakala</resource>
 		<resource name="settings_capture_windows_interactive">Etkileşimli pencere yakalama modunu kullan</resource>
-		<resource name="settings_checkperiod">Gün bazında güncelleme kontrol sıklığı (0=kontrol yok)</resource>
+		<resource name="settings_checkperiod">Güncelleme kontrol aralığı (gün cinsinden, 0=kontrol yok)</resource>
 		<resource name="settings_configureplugin">Yapılandır</resource>
 		<resource name="settings_copypathtoclipboard">Her görüntü kaydedildiğinde dosya yolunu panoya kopyala</resource>
 		<resource name="settings_destination">Hedef</resource>
