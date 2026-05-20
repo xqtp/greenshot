@@ -14,9 +14,9 @@ GNU Genel Kamu Lisansı hakkında ayrıntılar:</resource>
 		<resource name="bugreport_info">Beklenmeyen bir hata oluştu.
 
 Bu hatayı düzeltmemize yardımcı olabilirsiniz. 
-Lütfen aşağıdaki bağlantıdan hata raporu oluşturun ve metin kutusundaki içeriği açıklamaya yapıştırın.
+Lütfen aşağıdaki bağlantıya giderek yeni bir hata raporu oluşturun ve metin kutusundaki içeriği açıklamaya yapıştırın.
 
-Anlamlı bir özet ekleyin ve sorunu tekrar oluşturmak için faydalı bilgileri paylaşın.
+Kısa bir özet ekleyin ve sorunu yeniden oluşturmak için faydalı bilgileri paylaşın.
 Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz çok seviniriz. (Arama özelliğini kullanarak bunu hızlıca yapabilirsiniz.) Teşekkürler!</resource>
 		<resource name="bugreport_title">Hata</resource>
 		<resource name="CANCEL">İptal</resource>
@@ -70,9 +70,9 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="editor_align_vertical">Dikey hizala</resource>
 		<resource name="editor_arrange">Düzenle</resource>
 		<resource name="editor_arrowheads">Ok uçları</resource>
-		<resource name="editor_arrowheads_both">İki uçta da</resource>
+		<resource name="editor_arrowheads_both">Her iki uçta</resource>
 		<resource name="editor_arrowheads_end">Bitişte</resource>
-		<resource name="editor_arrowheads_none">Ok ucu yok</resource>
+		<resource name="editor_arrowheads_none">Hiçbiri</resource>
 		<resource name="editor_arrowheads_start">Başlangıçta</resource>
 		<resource name="editor_autocrop">Otomatik kırp</resource>
         <resource name="editor_autocrop_not_possible">Otomatik kırpma yapılamıyor</resource>
@@ -158,7 +158,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="editor_preview_quality">Ön izleme kalitesi</resource>
 		<resource name="editor_print">Yazdır</resource>
 		<resource name="editor_remove_transparency">Saydamlığı kaldır</resource>
-		<resource name="editor_redo">Yeniden yap {0}</resource>
+		<resource name="editor_redo">Yinele {0}</resource>
 		<resource name="editor_resetsize">Boyutu sıfırla</resource>
         <resource name="editor_resize_percent">Yüzde</resource>
         <resource name="editor_resize_pixel">Piksel</resource>
@@ -183,16 +183,16 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="error">Hata</resource>
 		<resource name="error_multipleinstances">Greenshot zaten çalışıyor.</resource>
 		<resource name="error_nowriteaccess">Dosya {0} konumuna kaydedilemiyor.
-Seçili kayıt yolunun yazılabilir olduğundan emin olun.</resource>
+Seçilen depolama konumunun yazma izinlerini kontrol edin.</resource>
 		<resource name="error_openfile">"{0}" dosyası açılamadı.</resource>
 		<resource name="error_openlink">'{0}' bağlantısı açılamadı.</resource>
-		<resource name="error_save">Ekran görüntüsü kaydedilemedi, lütfen uygun bir yer seçin.</resource>
+		<resource name="error_save">Ekran görüntüsü kaydedilemedi, uygun bir kaydetme konumu seçin.</resource>
     <resource name="error_save_invalid_chars">Oluşturulan dosya veya klasör adı geçersiz. Lütfen dosya adı modelini düzeltin ve ardından tekrar deneyin.</resource>
 		<resource name="expertsettings">Gelişmiş Ayarlar</resource>
 		<resource name="expertsettings_autoreducecolors">Renkler 256'dan az ise ve görüntü 8 bitten büyükse 8 bitlik bir görüntü oluştur.</resource>
 		<resource name="expertsettings_checkunstableupdates">Kararsız güncelleştirmeleri kontrol et</resource>
 		<resource name="expertsettings_clipboardformats">Pano biçimleri</resource>
-		<resource name="expertsettings_counter">Dosya adı şablonundaki ${NUM} numarası</resource>
+		<resource name="expertsettings_counter">Dosya adı biçimindeki ${NUM} sayacı</resource>
 		<resource name="expertsettings_enableexpert">Ne yaptığımı biliyorum!</resource>
 		<resource name="expertsettings_footerpattern">Yazıcı altbilgi şablonu</resource>
 		<resource name="expertsettings_minimizememoryfootprint">Bellek kullanımını azaltın, fakat performansı düşürür (önerilmez).</resource>
@@ -207,10 +207,10 @@ Seçili kayıt yolunun yazılabilir olduğundan emin olun.</resource>
 		<resource name="jpegqualitydialog_choosejpegquality">Lütfen görüntünüz için JPEG kalitesini seçin.</resource>
 		<resource name="OK">Tamam</resource>
 		<resource name="print_error">Yazdırmaya çalışırken bir hata oldu.</resource>
-		<resource name="printoptions_allowcenter">Sayfada ortala</resource>
-		<resource name="printoptions_allowenlarge">Kağıt boyutuna göre büyüt</resource>
+		<resource name="printoptions_allowcenter">Çıktıyı sayfa ortasına hizala</resource>
+		<resource name="printoptions_allowenlarge">Kağıt boyutuna sığdırmak için büyüt</resource>
 		<resource name="printoptions_allowrotate">Sayfa yönüne göre döndür</resource>
-		<resource name="printoptions_allowshrink">Kağıt boyutuna göre küçült</resource>
+		<resource name="printoptions_allowshrink">Kağıt boyutuna sığdırmak için küçült</resource>
     <resource name="printoptions_colors">Renk ayarları</resource>
 	<resource name="printoptions_dontaskagain">Bu ayarları varsayılan olarak kaydet ve bir daha sorma</resource>
 		<resource name="printoptions_inverted">Ters çevrilmiş renklerle yazdır</resource>
@@ -230,12 +230,13 @@ Seçili kayıt yolunun yazılabilir olduğundan emin olun.</resource>
 		<resource name="settings_capture">Yakala</resource>
 		<resource name="settings_capture_mousepointer">Fare imlecini yakala</resource>
 		<resource name="settings_capture_windows_interactive">Etkileşimli pencere yakalama modunu kullan</resource>
-		<resource name="settings_checkperiod">Gün bazında güncelleme kontrol sıklığı (0=kontrol yok)</resource>
+		<resource name="settings_checkperiod">Güncelleme kontrol aralığı (gün cinsinden, 0=kontrol yok)</resource>
 		<resource name="settings_configureplugin">Yapılandır</resource>
 		<resource name="settings_copypathtoclipboard">Her görüntü kaydedildiğinde dosya yolunu panoya kopyala</resource>
 		<resource name="settings_destination">Hedef</resource>
 		<resource name="settings_destination_clipboard">Panoya kopyala</resource>
 		<resource name="settings_destination_editor">Editörde aç</resource>
+        <resource name="settings_destination_editor_add">Editöre ekle</resource>
 		<resource name="settings_destination_email">E-Posta gönder</resource>
 		<resource name="settings_destination_file">Doğrudan kaydet (aşağıdaki ayarları kullanarak)</resource>
 		<resource name="settings_destination_fileas">Farklı kaydet (iletişim kutusu gösterilir)</resource>
@@ -279,7 +280,7 @@ Greenshot ile dinamik klasör oluşturabilirsiniz. Klasör ve dosya adını ayı
 		<resource name="settings_registerhotkeys">Kısayol tuşlarını etkinleştir</resource>
 		<resource name="settings_showflashlight">Flaş etkisi</resource>
 		<resource name="settings_shownotify">Bildirimleri göster</resource>
-        <resource name="settings_zoom">Büyüteçi göster</resource>
+        <resource name="settings_zoom">Büyüteci göster</resource>
 		<resource name="settings_storagelocation">Kayıt yeri</resource>
 		<resource name="settings_title">Ayarlar</resource>
 		<resource name="settings_tooltip_filenamepattern">Görüntüleri kaydederken dosya adlarını belirleyen kalıp</resource>
@@ -287,6 +288,10 @@ Greenshot ile dinamik klasör oluşturabilirsiniz. Klasör ve dosya adını ayı
 		<resource name="settings_tooltip_primaryimageformat">Varsayılan görüntü biçimi</resource>
 		<resource name="settings_tooltip_registerhotkeys">Greenshot'ın başlangıçta Prnt, Ctrl + Print, Alt + Prnt kısayollarını sistem genelinde kullanıp kullanmayacağını ve program kapanana kadar aktif kalıp kalmayacağını belirler.</resource>
 		<resource name="settings_tooltip_storagelocation">Ekran görüntülerinin varsayılan olarak kaydedileceği konum. (Masaüstünü kullanmak için boş bırakın)</resource>
+        <resource name="settings_storagelocation_folder_error">Klasör seçici açılamadı.
+
+Depolama konumu Belgeler klasörünüz olarak ayarlandı. Farklı bir yol girmek isterseniz kutuya doğrudan yazın.</resource>
+        <resource name="settings_storagelocation_folder_error_title">Depolama konumu</resource>
 		<resource name="settings_usedefaultproxy">Varsayılan sistem proxy'sini kullan</resource>
 		<resource name="settings_visualization">Efektler</resource>
 		<resource name="settings_waittime">Yakalamadan önce beklenecek milisaniye</resource>
@@ -310,21 +315,21 @@ Greenshot özellikleri, kısayol tuşları olmadan sistem tepsisi menüsünden k
     <resource name="editor_dropshadow_settings">Gölge ayarları</resource>
     <resource name="editor_dropshadow_thickness">Gölge kalınlığı</resource>
 
-    <resource name="editor_tornedge_horizontaltoothrange">Yatay eksende yırtık yoğunluğu</resource>
+    <resource name="editor_tornedge_horizontaltoothrange">Yatay yırtık aralığı</resource>
     <resource name="editor_tornedge_settings">Yırtık kenar ayarları</resource>
     <resource name="editor_tornedge_toothsize">Yırtıkların boyutu</resource>
-    <resource name="editor_tornedge_verticaltoothrange">Dikey eksende yırtık yoğunluğu</resource>
-    <resource name="editor_tornedge_all">Bütün kenarlara uygula</resource>
-    <resource name="editor_tornedge_left">Sol tarafa</resource>
-    <resource name="editor_tornedge_right">Sağ tarafa</resource>
-    <resource name="editor_tornedge_top">Üst tarafa</resource>
-    <resource name="editor_tornedge_bottom">Alt tarafa</resource>
+    <resource name="editor_tornedge_verticaltoothrange">Dikey yırtık aralığı</resource>
+    <resource name="editor_tornedge_all">Tüm kenarlara uygula</resource>
+    <resource name="editor_tornedge_left">Sol kenara</resource>
+    <resource name="editor_tornedge_right">Sağ kenara</resource>
+    <resource name="editor_tornedge_top">Üst kenara</resource>
+    <resource name="editor_tornedge_bottom">Alt kenara</resource>
     <resource name="editor_tornedge_shadow">Gölge oluştur</resource>
     
-    <resource name="editor_counter">Rakam ekle (I)</resource>
+    <resource name="editor_counter">Sayaç ekle (I)</resource>
     <resource name="editor_speechbubble">Konuşma balonu ekle (S)</resource>
 
-    <resource name="editor_resize">Yeniden Boyutlandır (Z)</resource>
+    <resource name="editor_resize">Yeniden boyutlandır (Z)</resource>
     <resource name="editor_resize_settings">Yeniden boyutlandırma ayarları</resource>
     <resource name="editor_resize_aspectratio">En boy oranını koru</resource>
     <resource name="editor_resize_width">Genişlik</resource>
