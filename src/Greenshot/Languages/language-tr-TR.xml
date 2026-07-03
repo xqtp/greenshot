@@ -118,7 +118,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="editor_forecolor">Çizgi rengi (NumPad0-9, Shift+0-9)</resource>
 		<resource name="editor_grayscale">Gri tonlamalı</resource>
 		<resource name="editor_highlight_area">Bölgeyi vurgula</resource>
-		<resource name="editor_highlight_grayscale">Gri tonlama</resource>
+		<resource name="editor_highlight_grayscale">Gri tonlamalı</resource>
 		<resource name="editor_highlight_magnify">Büyüt</resource>
 		<resource name="editor_highlight_mode">Vurgulama modu</resource>
 		<resource name="editor_highlight_text">Metni vurgula</resource>
