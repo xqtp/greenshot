@@ -68,7 +68,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="editor_align_right">Sağa</resource>
 		<resource name="editor_align_top">Üste</resource>
 		<resource name="editor_align_vertical">Dikey hizala</resource>
-		<resource name="editor_arrange">Düzenle</resource>
+		<resource name="editor_arrange">Sırala</resource>
 		<resource name="editor_arrowheads">Ok uçları</resource>
 		<resource name="editor_arrowheads_both">Her iki uçta</resource>
 		<resource name="editor_arrowheads_end">Bitişte</resource>
