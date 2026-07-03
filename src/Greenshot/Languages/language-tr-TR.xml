@@ -189,7 +189,7 @@ Seçilen depolama konumunun yazma izinlerini kontrol edin.</resource>
 		<resource name="error_openlink">'{0}' bağlantısı açılamadı.</resource>
 		<resource name="error_save">Ekran görüntüsü kaydedilemedi, uygun bir kaydetme konumu seçin.</resource>
     <resource name="error_save_invalid_chars">Oluşturulan dosya veya klasör adı geçersiz. Lütfen dosya adı modelini düzeltin ve ardından tekrar deneyin.</resource>
-		<resource name="expertsettings">Gelişmiş Ayarlar</resource>
+		<resource name="expertsettings">Gelişmiş</resource>
 		<resource name="expertsettings_autoreducecolors">Renkler 256'dan az ise ve görüntü 8 bitten büyükse 8 bitlik bir görüntü oluştur.</resource>
 		<resource name="expertsettings_checkunstableupdates">Kararsız güncelleştirmeleri kontrol et</resource>
 		<resource name="expertsettings_clipboardformats">Pano biçimleri</resource>
