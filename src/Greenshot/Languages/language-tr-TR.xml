@@ -78,7 +78,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
         <resource name="editor_autocrop_not_possible">Otomatik kırpma yapılamıyor</resource>
 		<resource name="editor_backcolor">Dolgu rengi (0-9)</resource>
 		<resource name="editor_blur_radius">Bulanıklaştırma çapı</resource>
-		<resource name="editor_bold">Koyu</resource>
+		<resource name="editor_bold">Kalın</resource>
 		<resource name="editor_border">Kenarlık</resource>
 		<resource name="editor_brightness">Parlaklık</resource>
 		<resource name="editor_cancel">İptal</resource>
@@ -126,7 +126,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="editor_imagesaved">Görüntü {0} konumuna kaydedildi.</resource>
 		<resource name="editor_insertwindow">Pencere ekle</resource>
 		<resource name="editor_invert">Renkleri ters çevir</resource>
-		<resource name="editor_italic">Yatık</resource>
+		<resource name="editor_italic">İtalik</resource>
 		<resource name="editor_load_objects">Dosyadan nesneleri yükle</resource>
 		<resource name="editor_magnification_factor">Büyütme katsayısı</resource>
 		<resource name="editor_match_capture_size">Yakalama boyutuyla eşleştir</resource>
@@ -307,7 +307,7 @@ Greenshot özellikleri, kısayol tuşları olmadan sistem tepsisi menüsünden k
 		<resource name="WindowCaptureMode.Aero">Özel renk kullan</resource>
 		<resource name="WindowCaptureMode.AeroTransparent">Saydamlığı koru</resource>
 		<resource name="WindowCaptureMode.Auto">Otomatik</resource>
-		<resource name="WindowCaptureMode.GDI">Standart renk kullan</resource>
+		<resource name="WindowCaptureMode.GDI">Varsayılan rengi kullan</resource>
 		<resource name="WindowCaptureMode.Screen">Göründüğü gibi</resource>
                 
     <!-- 1.2 -->
