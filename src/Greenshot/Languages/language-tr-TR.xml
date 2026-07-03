@@ -55,7 +55,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="contextmenu_donate">Greenshot'ı Destekleyin</resource>
 		<resource name="contextmenu_exit">Çıkış</resource>
 		<resource name="contextmenu_help">Yardım</resource>
-		<resource name="contextmenu_openfile">Masaüstünden görüntü aç</resource>
+		<resource name="contextmenu_openfile">Dosyadan görüntü aç</resource>
 		<resource name="contextmenu_openrecentcapture">Son kaydedilenin konumunu aç</resource>
 		<resource name="contextmenu_quicksettings">Hızlı ayarlar</resource>
 		<resource name="contextmenu_settings">Ayarlar...</resource>
