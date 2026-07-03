@@ -112,7 +112,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="editor_duplicate">Seçili ögeyi çoğalt</resource>
 		<resource name="editor_edit">Düzenle</resource>
 		<resource name="editor_effects">Efektler</resource>
-		<resource name="editor_email">E-Posta</resource>
+		<resource name="editor_email">E-posta gönder</resource>
 		<resource name="editor_file">Dosya</resource>
 		<resource name="editor_fontsize">Boyut</resource>
 		<resource name="editor_forecolor">Çizgi rengi (NumPad0-9, Shift+0-9)</resource>
@@ -238,7 +238,7 @@ Seçilen depolama konumunun yazma izinlerini kontrol edin.</resource>
 		<resource name="settings_destination_clipboard">Panoya kopyala</resource>
 		<resource name="settings_destination_editor">Editörde aç</resource>
         <resource name="settings_destination_editor_add">Editöre ekle</resource>
-		<resource name="settings_destination_email">E-Posta gönder</resource>
+		<resource name="settings_destination_email">E-posta gönder</resource>
 		<resource name="settings_destination_file">Doğrudan kaydet (aşağıdaki ayarları kullanarak)</resource>
 		<resource name="settings_destination_fileas">Farklı kaydet (iletişim kutusu gösterilir)</resource>
 		<resource name="settings_destination_picker">Her seferinde hedef sor</resource>
