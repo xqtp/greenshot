@@ -255,7 +255,8 @@ ${DD} gün, 2 hane
 ${hh} saat, 2 hane
 ${mm} dakika, 2 hane
 ${ss} saniye, 2 hane
-${NUM} artan sayı, 6 hane
+${NUM} artan sayı, varsayılan olarak 6 hane
+${NUM:p-2,0} artan sayı, başında sıfırla 2 hane (01, 02, 03)
 ${RRR...} rastgele harf ve rakamlar, 'R'lerle aynı uzunlukta
 ${title} Pencere başlığı
 ${user} Windows kullanıcısı
@@ -263,6 +264,7 @@ ${domain} Windows alan adı
 ${hostname} Bilgisayar adı
 
 Greenshot ile dinamik klasör oluşturabilirsiniz. Klasör ve dosya adını ayırmak için ters eğik çizgi (\) kullanın.
+${NUM} sayacını sıfırlamak için Gelişmiş ayarlardan değerini değiştirin.
 Örnek: ${YYYY}-${MM}-${DD}\${hh}-${mm}-${ss} kalıbı, varsayılan kayıt konumuna o günün tarihine göre klasör oluşturur, örneğin 2008-06-29. Ekran görüntüsü dosyası, saate göre adlandırılır, örneğin 11_58_32 (dosya uzantısı ise ayarlara göre eklenir.)</resource>
 		<resource name="settings_network">Ağ ve güncellemeler</resource>
 		<resource name="settings_output">Çıkış</resource>
