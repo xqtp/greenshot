@@ -119,8 +119,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="editor_email">E-posta gönder</resource>
 		<resource name="editor_file">Dosya</resource>
 		<resource name="editor_fontsize">Boyut</resource>
-        <resource name="editor_fit">Sığdır</resource>
-		<resource name="editor_forecolor">Çizgi rengi (NumPad0-9, Shift+0-9)</resource>
+        <resource name="editor_forecolor">Çizgi rengi (NumPad0-9, Shift+0-9)</resource>
 		<resource name="editor_grayscale">Gri tonlamalı</resource>
 		<resource name="editor_highlight_area">Bölgeyi vurgula</resource>
 		<resource name="editor_highlight_grayscale">Gri tonlamalı</resource>
@@ -161,8 +160,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="editor_opendirinexplorer">Klasörü Dosya Gezgini ile aç</resource>
 		<resource name="editor_pastefromclipboard">Yapıştır</resource>
 		<resource name="editor_pixel_size">Piksel boyutu</resource>
-        <resource name="editor_pushout">Genişlet ve dışına taşı</resource>
-		<resource name="editor_preview_quality">Ön izleme kalitesi</resource>
+        <resource name="editor_preview_quality">Ön izleme kalitesi</resource>
 		<resource name="editor_print">Yazdır</resource>
 		<resource name="editor_remove_transparency">Saydamlığı kaldır</resource>
 		<resource name="editor_redo">Yinele {0}</resource>
@@ -178,8 +176,7 @@ Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz ç
 		<resource name="editor_senttoprinter">'{0}' yazıcısına gönderildi</resource>
 		<resource name="editor_shadow">Gölge ekle (/)</resource>
 		<resource name="editor_storedtoclipboard">Görüntü panoya kaydedildi.</resource>
-        <resource name="editor_snap">Kenara yasla</resource>
-		<resource name="editor_thickness">Çizgi kalınlığı</resource>
+        <resource name="editor_thickness">Çizgi kalınlığı</resource>
 		<resource name="editor_title">Greenshot editörü</resource>
 		<resource name="editor_torn_edge">Kenarı yırt</resource>
 		<resource name="editor_undo">Geri al {0}</resource>
