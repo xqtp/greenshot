@@ -1,6 +1,6 @@
 /*
  * Greenshot - a free and open source screenshot tool
- * Copyright (C) 2004-2026 Thomas Braun, Jens Klingen, Robin Krom
+ * Copyright (C) 2007-2026 Thomas Braun, Jens Klingen, Robin Krom
  * 
  * For more information see: https://getgreenshot.org/
  * The Greenshot project is hosted on GitHub https://github.com/greenshot/greenshot
@@ -21,7 +21,7 @@
 
 using System;
 using System.Collections.Generic;
-using Greenshot.Base.Core;
+using Dapplo.Ini;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Plugin;
 using Greenshot.Plugin.Office.Destinations;
@@ -132,12 +132,27 @@ namespace Greenshot.Plugin.Office
 
 
         /// <summary>
-        /// Implementation of the IGreenshotPlugin.Initialize
+        /// Implementation of RegisterConfiguration phase: no configuration to register for Office plugin.
+        /// </summary>
+        public void RegisterConfiguration(IniConfig iniConfig)
+        {
+            iniConfig.AddSection(new OfficeConfigurationImpl());
+        }
+
+        /// <summary>
+        /// Implementation of RegisterServices phase: register DI services after config is loaded.
+        /// </summary>
+        public void RegisterServices(IServiceLocator serviceLocator)
+        {
+            serviceLocator.AddService(Destinations());
+        }
+
+        /// <summary>
+        /// Implementation of the IGreenshotPlugin.Start
         /// </summary>
         /// <returns>true if plugin is initialized, false if not (doesn't show)</returns>
-        public bool Initialize()
+        public bool Start()
         {
-            SimpleServiceProvider.Current.AddService(Destinations());
             return true;
         }
 

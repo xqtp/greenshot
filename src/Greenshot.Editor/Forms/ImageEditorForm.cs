@@ -1,6 +1,6 @@
 /*
  * Greenshot - a free and open source screenshot tool
- * Copyright (C) 2004-2026 Thomas Braun, Jens Klingen, Robin Krom
+ * Copyright (C) 2007-2026 Thomas Braun, Jens Klingen, Robin Krom
  *
  * For more information see: https://getgreenshot.org/
  * The Greenshot project is hosted on GitHub https://github.com/greenshot/greenshot
@@ -26,24 +26,19 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
-using Dapplo.Windows.Common.Enums;
 using Dapplo.Windows.Common.Extensions;
 using Dapplo.Windows.Common.Structs;
 using Dapplo.Windows.Dpi;
 using Dapplo.Windows.Kernel32;
-using Dapplo.Windows.Messages;
-using Dapplo.Windows.Messages.Enumerations;
 using Dapplo.Windows.User32;
 using Dapplo.Windows.User32.Structs;
 using Greenshot.Base;
-using Greenshot.Base.Controls;
 using Greenshot.Base.Core;
 using Greenshot.Base.Core.Enums;
 using Greenshot.Base.Effects;
 using Greenshot.Base.Help;
-using Greenshot.Base.IniFile;
+using Dapplo.Ini;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Drawing;
 using Greenshot.Base.Interfaces.Forms;
@@ -53,6 +48,7 @@ using Greenshot.Editor.Configuration;
 using Greenshot.Editor.Controls.Emoji;
 using Greenshot.Editor.Destinations;
 using Greenshot.Editor.Drawing;
+using Greenshot.Editor.Drawing.Emoji;
 using Greenshot.Editor.Drawing.Fields;
 using Greenshot.Editor.Drawing.Fields.Binding;
 using Greenshot.Editor.Helpers;
@@ -66,8 +62,10 @@ namespace Greenshot.Editor.Forms
     public partial class ImageEditorForm : EditorForm, IImageEditor
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ImageEditorForm));
-        private static readonly EditorConfiguration EditorConfiguration = IniConfig.GetIniSection<EditorConfiguration>();
-        private static readonly CoreConfiguration CoreConfiguration = IniConfig.GetIniSection<CoreConfiguration>();
+        private static readonly IEditorConfiguration EditorConfiguration = IniConfigHelper.EnsureSection<IEditorConfiguration>(() => new EditorConfigurationImpl());
+        private static readonly ICoreConfiguration CoreConfiguration = IniConfigHelper.EnsureSection<ICoreConfiguration>(() => new CoreConfigurationImpl());
+
+        private System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ImageEditorForm));
 
         private static readonly List<string> IgnoreDestinations = new()
         {
@@ -79,7 +77,7 @@ namespace Greenshot.Editor.Forms
         private static readonly object _editorListLock = new();
 
         private Surface _surface;
-        private GreenshotToolStripButton[] _toolbarButtons;
+        private ToolStripButton[] _toolbarButtons;
 
         private static readonly string[] SupportedClipboardFormats =
         {
@@ -160,31 +158,24 @@ namespace Greenshot.Editor.Forms
             //
             // The InitializeComponent() call is required for Windows Forms designer support.
             //
-            ManualLanguageApply = true;
             InitializeComponent();
-            // Make sure we change the icon size depending on the scaling
-            Load += delegate
-            {
-                var thread = new Thread(AddDestinations)
-                {
-                    Name = "add destinations"
-                };
-                thread.Start();
-            };
+            InitializeLanguage();
+            // Add the destinations after the form is loaded, this is needed for the dynamic destinations which need the handle of the form
+            Load += (s, eventArgs) => AddDestinations();
 
             // Make sure the editor is placed on the same location as the last editor was on close
             // But only if this still exists, else it will be reset (BUG-1812)
-            WindowPlacement editorWindowPlacement = EditorConfiguration.GetEditorPlacement();
+            WindowPlacement editorWindowPlacement = EditorConfigurationHelper.GetEditorPlacement(EditorConfiguration);
             NativeRect screenBounds = DisplayInfo.ScreenBounds;
             if (!screenBounds.Contains(editorWindowPlacement.NormalPosition))
             {
-                EditorConfiguration.ResetEditorPlacement();
+                EditorConfigurationHelper.ResetEditorPlacement(EditorConfiguration);
             }
 
             // ReSharper disable once UnusedVariable
             WindowDetails thisForm = new(Handle)
             {
-                WindowPlacement = EditorConfiguration.GetEditorPlacement()
+                WindowPlacement = EditorConfigurationHelper.GetEditorPlacement(EditorConfiguration)
             };
 
             // init surface
@@ -276,6 +267,7 @@ namespace Greenshot.Editor.Forms
                 _surface.MovingElementChanged += delegate { RefreshEditorControls(); };
                 _surface.DrawingModeChanged += Surface_DrawingModeChanged;
                 _surface.SurfaceSizeChanged += SurfaceSizeChanged;
+                _surface.SurfaceExpanded += SurfaceExpanded;
                 _surface.SurfaceMessage += SurfaceMessageReceived;
                 _surface.ForegroundColorChanged += ForegroundColorChanged;
                 _surface.BackgroundColorChanged += BackgroundColorChanged;
@@ -328,6 +320,19 @@ namespace Greenshot.Editor.Forms
             };
             //toolbarDropDownButtons = new ToolStripDropDownButton[]{btnBlur, btnPixeliate, btnTextHighlighter, btnAreaHighlighter, btnMagnifier};
 
+            try
+            {
+                var editorPlugins = SimpleServiceProvider.Current.GetAllInstances<IEditorPlugin>();
+                foreach (var plugin in editorPlugins)
+                {
+                    plugin.InitializeEditor(this, pluginToolStripMenuItem, Surface);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error initializing editor plugins", ex);
+            }
+
             pluginToolStripMenuItem.Visible = pluginToolStripMenuItem.DropDownItems.Count > 0;
 
             // Make sure the value is set correctly when starting
@@ -335,8 +340,6 @@ namespace Greenshot.Editor.Forms
             {
                 counterUpDown.Value = Surface.CounterStart;
             }
-
-            ApplyLanguage();
         }
 
         /// <summary>
@@ -372,37 +375,34 @@ namespace Greenshot.Editor.Forms
         /// </summary>
         private void AddDestinations()
         {
-            Invoke((MethodInvoker) delegate
+            // Create export buttons
+            foreach (IDestination destination in DestinationHelper.GetAllDestinations())
             {
-                // Create export buttons
-                foreach (IDestination destination in DestinationHelper.GetAllDestinations())
+                if (destination.Priority <= 2)
                 {
-                    if (destination.Priority <= 2)
-                    {
-                        continue;
-                    }
-
-                    if (!destination.IsActive)
-                    {
-                        continue;
-                    }
-
-                    if (destination.DisplayIcon == null)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        AddDestinationButton(destination);
-                    }
-                    catch (Exception addingException)
-                    {
-                        Log.WarnFormat("Problem adding destination {0}", destination.Designation);
-                        Log.Warn("Exception: ", addingException);
-                    }
+                    continue;
                 }
-            });
+
+                if (!destination.IsActiveFor(_surface.CaptureDetails))
+                {
+                    continue;
+                }
+
+                if (destination.DisplayIcon == null)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    AddDestinationButton(destination);
+                }
+                catch (Exception addingException)
+                {
+                    Log.WarnFormat("Problem adding destination {0}", destination.Designation);
+                    Log.Warn("Exception: ", addingException);
+                }
+            }
         }
 
         private void AddDestinationButton(IDestination toolstripDestination)
@@ -502,12 +502,12 @@ namespace Greenshot.Editor.Forms
                     continue;
                 }
 
-                if (!destination.IsActive)
+                if (!destination.IsActiveFor(_surface.CaptureDetails))
                 {
                     continue;
                 }
 
-                ToolStripMenuItem item = destination.GetMenuItem(true, null, DestinationToolStripMenuItemClick);
+                ToolStripMenuItem item = destination.GetMenuItem(true, null, DestinationToolStripMenuItemClick, _surface.CaptureDetails);
                 if (item != null)
                 {
                     item.ShortcutKeys = destination.EditorShortcutKeys;
@@ -517,7 +517,11 @@ namespace Greenshot.Editor.Forms
 
             // add the elements after the destinations
             fileStripMenuItem.DropDownItems.Add(toolStripSeparator9);
-            fileStripMenuItem.DropDownItems.Add(closeAllToolStripMenuItem);
+            // Only provide the close all if there is more then one editor open, otherwise it doesn't make sense and clutters the UI
+            if (EditorList.Count > 1)
+            {
+                fileStripMenuItem.DropDownItems.Add(closeAllToolStripMenuItem);
+            }
             fileStripMenuItem.DropDownItems.Add(closeToolStripMenuItem);
             // reassign the close shortcuts besause ClearItems above removes them
             closeToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.F4;
@@ -566,7 +570,7 @@ namespace Greenshot.Editor.Forms
         {
             _surface.FieldAggregator.GetField(FieldType.LINE_COLOR).Value = eventArgs.Color;
         }
-        
+
         /// <summary>
         /// This is called when the background color of the select element chances, used for shortcuts
         /// </summary>
@@ -576,7 +580,7 @@ namespace Greenshot.Editor.Forms
         {
             _surface.FieldAggregator.GetField(FieldType.FILL_COLOR).Value = eventArgs.Color;
         }
-        
+
         /// <summary>
         /// This is called when the line thickness of the select element chances, used for shortcuts
         /// </summary>
@@ -586,7 +590,7 @@ namespace Greenshot.Editor.Forms
         {
             _surface.FieldAggregator.GetField(FieldType.LINE_THICKNESS).Value = eventArgs.Thickness;
         }
-        
+
         /// <summary>
         /// This is called when the shadow of the select element chances, used for shortcuts
         /// </summary>
@@ -611,6 +615,16 @@ namespace Greenshot.Editor.Forms
 
             dimensionsLabel.Text = Surface.Image.Width + "x" + Surface.Image.Height;
             AlignCanvasPositionAfterResize();
+        }
+
+        /// <summary>
+        /// This is called when expanding the surface in one direction, used to accomodate shifting an object to one side.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SurfaceExpanded(object sender, EventArgs e)
+        {
+            UpdateUndoRedoSurfaceDependencies();
         }
 
         public ISurface Surface
@@ -682,6 +696,8 @@ namespace Greenshot.Editor.Forms
                     SetButtonChecked(btnEmoji);
                     break;
             }
+
+            RefreshEditorControls();
         }
 
         /**
@@ -713,7 +729,7 @@ namespace Greenshot.Editor.Forms
         private void BtnPrintClick(object sender, EventArgs e)
         {
             // The BeginInvoke is a solution for the printdialog not having focus
-            BeginInvoke((MethodInvoker) delegate { DestinationHelper.ExportCapture(true, WellKnownDestinations.Printer, _surface, _surface.CaptureDetails); });
+            BeginInvoke((MethodInvoker)delegate { DestinationHelper.ExportCapture(true, WellKnownDestinations.Printer, _surface, _surface.CaptureDetails); });
         }
 
         private void CloseToolStripMenuItemClick(object sender, EventArgs e)
@@ -835,7 +851,7 @@ namespace Greenshot.Editor.Forms
         {
             if (_toolbarButtons != null)
             {
-                foreach (GreenshotToolStripButton butt in _toolbarButtons)
+                foreach (ToolStripButton butt in _toolbarButtons)
                 {
                     butt.Checked = false;
                 }
@@ -1041,8 +1057,8 @@ namespace Greenshot.Editor.Forms
             }
 
             // persist our geometry string.
-            EditorConfiguration.SetEditorPlacement(new WindowDetails(Handle).WindowPlacement);
-            IniConfig.Save();
+            EditorConfigurationHelper.SetEditorPlacement(EditorConfiguration, new WindowDetails(Handle).WindowPlacement);
+            IniConfigRegistry.Get().Save();
 
             // remove from the editor list
             lock (_editorListLock)
@@ -1232,7 +1248,7 @@ namespace Greenshot.Editor.Forms
                         continue;
                     }
 
-                    if (!destination.IsActive)
+                    if (!destination.IsActiveFor(_surface.CaptureDetails))
                     {
                         continue;
                     }
@@ -1329,7 +1345,7 @@ namespace Greenshot.Editor.Forms
 
         private void StatusLabelClicked(object sender, MouseEventArgs e)
         {
-            ToolStrip ss = (StatusStrip) ((ToolStripStatusLabel) sender).Owner;
+            ToolStrip ss = (StatusStrip)((ToolStripStatusLabel)sender).Owner;
             ss.ContextMenuStrip?.Show(ss, e.X, e.Y);
         }
 
@@ -1373,6 +1389,8 @@ namespace Greenshot.Editor.Forms
             new BidirectionalBinding(obfuscateModeButton, "SelectedTag", _surface.FieldAggregator.GetField(FieldType.PREPARED_FILTER_OBFUSCATE), "Value");
             new BidirectionalBinding(cropModeButton, "SelectedTag", _surface.FieldAggregator.GetField(FieldType.CROPMODE), "Value");
             new BidirectionalBinding(highlightModeButton, "SelectedTag", _surface.FieldAggregator.GetField(FieldType.PREPARED_FILTER_HIGHLIGHT), "Value");
+            new BidirectionalBinding(arrowHeadsDropDownButton, "SelectedTag", _surface.FieldAggregator.GetField(FieldType.ARROWHEADS), "Value",
+                NotNullValidator.GetInstance());
             new BidirectionalBinding(counterUpDown, "Value", _surface, "CounterStart", DecimalIntConverter.GetInstance(), NotNullValidator.GetInstance());
         }
 
@@ -1381,6 +1399,7 @@ namespace Greenshot.Editor.Forms
         /// </summary>
         private void RefreshFieldControls()
         {
+            if (IsDisposed || Disposing) return;
             propertiesToolStrip.SuspendLayout();
             if (_surface.HasSelectedElements || _surface.DrawingMode != DrawingModes.None)
             {
@@ -1394,6 +1413,10 @@ namespace Greenshot.Editor.Forms
                 pixelSizeLabel.Visible = pixelSizeUpDown.Visible = props.HasFieldValue(FieldType.PIXEL_SIZE);
                 brightnessLabel.Visible = brightnessUpDown.Visible = props.HasFieldValue(FieldType.BRIGHTNESS);
                 arrowHeadsLabel.Visible = arrowHeadsDropDownButton.Visible = props.HasFieldValue(FieldType.ARROWHEADS);
+                if (props.HasFieldValue(FieldType.ARROWHEADS))
+                {
+                    SyncArrowHeadControls((ArrowContainer.ArrowHeadCombination)props.GetFieldValue(FieldType.ARROWHEADS));
+                }
                 fontFamilyComboBox.Visible = props.HasFieldValue(FieldType.FONT_FAMILY);
                 fontSizeLabel.Visible = fontSizeUpDown.Visible = props.HasFieldValue(FieldType.FONT_SIZE);
                 fontBoldButton.Visible = props.HasFieldValue(FieldType.FONT_BOLD);
@@ -1403,7 +1426,7 @@ namespace Greenshot.Editor.Forms
                 shadowButton.Visible = props.HasFieldValue(FieldType.SHADOW);
                 counterLabel.Visible = counterUpDown.Visible = props.HasFieldValue(FieldType.FLAGS) && ((FieldFlag)props.GetFieldValue(FieldType.FLAGS)).HasFlag(FieldFlag.COUNTER);
 
-                btnConfirm.Visible = btnCancel.Visible = props.HasFieldValue(FieldType.FLAGS) && ((FieldFlag) props.GetFieldValue(FieldType.FLAGS)).HasFlag(FieldFlag.CONFIRMABLE);
+                btnConfirm.Visible = btnCancel.Visible = props.HasFieldValue(FieldType.FLAGS) && ((FieldFlag)props.GetFieldValue(FieldType.FLAGS)).HasFlag(FieldFlag.CONFIRMABLE);
                 btnConfirm.Enabled = _surface.HasSelectedElements;
 
                 obfuscateModeButton.Visible = props.HasFieldValue(FieldType.PREPARED_FILTER_OBFUSCATE);
@@ -1420,6 +1443,7 @@ namespace Greenshot.Editor.Forms
 
         private void HideToolstripItems()
         {
+            if (IsDisposed || Disposing) return;
             foreach (ToolStripItem toolStripItem in propertiesToolStrip.Items)
             {
                 toolStripItem.Visible = false;
@@ -1431,15 +1455,16 @@ namespace Greenshot.Editor.Forms
         /// </summary>
         private void RefreshEditorControls()
         {
+            if (IsDisposed || Disposing) return;
             int stepLabels = _surface.CountStepLabels(null);
             Image icon;
             if (stepLabels <= 20)
             {
-                icon = (Image) resources.GetObject($"btnStepLabel{stepLabels:00}.Image");
+                icon = (Image)resources.GetObject($"btnStepLabel{stepLabels:00}.Image");
             }
             else
             {
-                icon = (Image) resources.GetObject("btnStepLabel20+.Image");
+                icon = (Image)resources.GetObject("btnStepLabel20+.Image");
             }
 
             btnStepLabel.Image = icon;
@@ -1448,7 +1473,7 @@ namespace Greenshot.Editor.Forms
             FieldAggregator props = (FieldAggregator)_surface.FieldAggregator;
             // if a confirmable element is selected, we must disable most of the controls
             // since we demand confirmation or cancel for confirmable element
-            if (props.HasFieldValue(FieldType.FLAGS) && ((FieldFlag) props.GetFieldValue(FieldType.FLAGS) & FieldFlag.CONFIRMABLE) == FieldFlag.CONFIRMABLE)
+            if (props.HasFieldValue(FieldType.FLAGS) && ((FieldFlag)props.GetFieldValue(FieldType.FLAGS) & FieldFlag.CONFIRMABLE) == FieldFlag.CONFIRMABLE)
             {
                 // disable most controls
                 if (!_controlsDisabledDueToConfirmable)
@@ -1501,9 +1526,26 @@ namespace Greenshot.Editor.Forms
         }
 
 
-        private void ArrowHeadsToolStripMenuItemClick(object sender, EventArgs e)
+        private void ArrowHeadsDropDownButtonDropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
-            _surface.FieldAggregator.GetField(FieldType.ARROWHEADS).Value = (ArrowContainer.ArrowHeadCombination) ((ToolStripMenuItem) sender).Tag;
+            SyncArrowHeadMenuChecked((ArrowContainer.ArrowHeadCombination)e.ClickedItem.Tag);
+        }
+
+        private void SyncArrowHeadControls(ArrowContainer.ArrowHeadCombination value)
+        {
+            arrowHeadsDropDownButton.SelectedTag = value;
+            SyncArrowHeadMenuChecked(value);
+        }
+
+        private void SyncArrowHeadMenuChecked(ArrowContainer.ArrowHeadCombination value)
+        {
+            foreach (ToolStripItem item in arrowHeadsDropDownButton.DropDownItems)
+            {
+                if (item is ToolStripMenuItem menuItem)
+                {
+                    menuItem.Checked = menuItem.Tag != null && menuItem.Tag.Equals(value);
+                }
+            }
         }
 
         private void EditToolStripMenuItemClick(object sender, EventArgs e)
@@ -1646,14 +1688,14 @@ namespace Greenshot.Editor.Forms
                     return;
                 }
 
-                clickedDestination = (IDestination) clickedControl.Tag;
+                clickedDestination = (IDestination)clickedControl.Tag;
             }
             else
             {
                 if (sender is ToolStripMenuItem item)
                 {
                     ToolStripMenuItem clickedMenuItem = item;
-                    clickedDestination = (IDestination) clickedMenuItem.Tag;
+                    clickedDestination = (IDestination)clickedMenuItem.Tag;
                 }
             }
 
@@ -1671,9 +1713,9 @@ namespace Greenshot.Editor.Forms
         }
 
         protected void CropStyleDropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
-        {      
+        {
             InitCropMode((CropContainer.CropModes)e.ClickedItem.Tag);
-         
+
             RefreshFieldControls();
             Invalidate(true);
         }
@@ -1723,7 +1765,7 @@ namespace Greenshot.Editor.Forms
 
         private void Insert_window_toolstripmenuitemMouseEnter(object sender, EventArgs e)
         {
-            ToolStripMenuItem captureWindowMenuItem = (ToolStripMenuItem) sender;
+            ToolStripMenuItem captureWindowMenuItem = (ToolStripMenuItem)sender;
             var mainForm = SimpleServiceProvider.Current.GetInstance<IGreenshotMainForm>();
             mainForm.AddCaptureWindowMenuItems(captureWindowMenuItem, Contextmenu_window_Click);
         }
@@ -1736,7 +1778,30 @@ namespace Greenshot.Editor.Forms
                 return;
             }
 
-            if (_surface.CaptureDetails.OcrInformation == null)
+            if (_surface.CaptureDetails.ProcessingTask != null && !_surface.CaptureDetails.ProcessingTask.IsCompleted)
+            {
+                Cursor = Cursors.WaitCursor;
+                try
+                {
+                    await _surface.CaptureDetails.ProcessingTask;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error waiting for background OCR processing in editor", ex);
+                }
+                finally
+                {
+                    Cursor = Cursors.Default;
+                }
+            }
+
+            List<IOcrLineFeature> ocrLines;
+            lock (_surface.CaptureDetails.Features)
+            {
+                ocrLines = _surface.CaptureDetails.Features.OfType<IOcrLineFeature>().ToList();
+            }
+
+            if (!ocrLines.Any())
             {
                 var ocrProvider = SimpleServiceProvider.Current.GetInstance<IOcrProvider>();
                 if (ocrProvider == null)
@@ -1748,7 +1813,15 @@ namespace Greenshot.Editor.Forms
                 Cursor = Cursors.WaitCursor;
                 try
                 {
-                    _surface.CaptureDetails.OcrInformation = await ocrProvider.DoOcrAsync(_surface);
+                    var detectedLines = await ocrProvider.DoOcrAsync(_surface);
+                    if (detectedLines != null && detectedLines.Any())
+                    {
+                        lock (_surface.CaptureDetails.Features)
+                        {
+                            _surface.CaptureDetails.Features.AddRange(detectedLines);
+                        }
+                        ocrLines = detectedLines;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1762,13 +1835,13 @@ namespace Greenshot.Editor.Forms
                 }
             }
 
-            if (_surface.CaptureDetails.OcrInformation == null || !_surface.CaptureDetails.OcrInformation.HasContent)
+            if (!ocrLines.Any())
             {
                 MessageBox.Show(Language.GetString("editor_obfuscate_text_no_text"), Language.GetString("editor_obfuscate_text_title"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            using (var dialog = new TextObfuscationForm(_surface, _surface.CaptureDetails.OcrInformation))
+            using (var dialog = new TextObfuscationForm(_surface, ocrLines))
             {
                 dialog.ShowDialog(this);
             }
@@ -1776,10 +1849,10 @@ namespace Greenshot.Editor.Forms
 
         private void Contextmenu_window_Click(object sender, EventArgs e)
         {
-            ToolStripMenuItem clickedItem = (ToolStripMenuItem) sender;
+            ToolStripMenuItem clickedItem = (ToolStripMenuItem)sender;
             try
             {
-                WindowDetails windowToCapture = (WindowDetails) clickedItem.Tag;
+                WindowDetails windowToCapture = (WindowDetails)clickedItem.Tag;
                 ICapture capture = new Capture();
                 using (Graphics graphics = Graphics.FromHwnd(Handle))
                 {
@@ -1794,8 +1867,8 @@ namespace Greenshot.Editor.Forms
                     capture = captureHelper.CaptureWindow(windowToCapture, capture, coreConfiguration.WindowCaptureMode);
                     if (capture?.CaptureDetails != null && capture.Image != null)
                     {
-                        ((Bitmap) capture.Image).SetResolution(capture.CaptureDetails.DpiX, capture.CaptureDetails.DpiY);
-                        _surface.AddImageContainer((Bitmap) capture.Image, 100, 100);
+                        ((Bitmap)capture.Image).SetResolution(capture.CaptureDetails.DpiX, capture.CaptureDetails.DpiY);
+                        _surface.AddImageContainer((Bitmap)capture.Image, 100, 100);
                     }
 
                     Activate();
@@ -1958,7 +2031,7 @@ namespace Greenshot.Editor.Forms
             {
                 Color = Color.White
             };
-            
+
             if (colorDialog.ShowDialog(this) == DialogResult.OK)
             {
                 var removeTransparencyEffect = new RemoveTransparencyEffect
@@ -1985,7 +2058,7 @@ namespace Greenshot.Editor.Forms
             var canvas = Surface as Control;
             Size canvasSize = canvas.Size;
             Size currentClientSize = panel1.ClientSize;
-            Panel panel = (Panel) canvas?.Parent;
+            Panel panel = (Panel)canvas?.Parent;
             if (panel == null)
             {
                 return;
@@ -2078,8 +2151,8 @@ namespace Greenshot.Editor.Forms
 
         private void ZoomSetValueMenuItemClick(object sender, EventArgs e)
         {
-            var senderMenuItem = (ToolStripMenuItem) sender;
-            var nextValue = Fraction.Parse((string) senderMenuItem.Tag);
+            var senderMenuItem = (ToolStripMenuItem)sender;
+            var nextValue = Fraction.Parse((string)senderMenuItem.Tag);
 
             ZoomSetValue(nextValue);
         }
@@ -2092,7 +2165,7 @@ namespace Greenshot.Editor.Forms
             var imageSize = Surface.Image.Size;
 
             static bool isFit(Fraction scale, int source, int boundary)
-                => (int) (source * scale) <= boundary;
+                => (int)(source * scale) <= boundary;
 
             var nextIndex = Array.FindLastIndex(
                 ZOOM_VALUES,
@@ -2152,7 +2225,7 @@ namespace Greenshot.Editor.Forms
             AlignCanvasPositionAfterResize();
 
             // Update zoom controls
-            zoomStatusDropDownBtn.Text = ((int) (100 * (double) value)).ToString() + "%";
+            zoomStatusDropDownBtn.Text = ((int)(100 * (double)value)).ToString() + "%";
             var valueString = value.ToString();
             foreach (var item in zoomMenuStrip.Items)
             {
@@ -2166,8 +2239,8 @@ namespace Greenshot.Editor.Forms
             rc = surface.GetVisibleRectangle();
             size = surface.Size;
             panel.AutoScrollPosition = new Point(
-                (int) (horizontalCenter * size.Width) - rc.Width / 2,
-                (int) (verticalCenter * size.Height) - rc.Height / 2
+                (int)(horizontalCenter * size.Width) - rc.Width / 2,
+                (int)(verticalCenter * size.Height) - rc.Height / 2
             );
         }
 
@@ -2205,6 +2278,126 @@ namespace Greenshot.Editor.Forms
             {
                 base.WndProc(ref m);
             }
+        }
+        protected override void InitializeLanguage()
+        {
+            this.toolsToolStrip.ImageScalingSize = coreConfiguration.IconSize;
+            this.menuStrip1.ImageScalingSize = coreConfiguration.IconSize;
+            this.destinationsToolStrip.ImageScalingSize = coreConfiguration.IconSize;
+            this.propertiesToolStrip.ImageScalingSize = coreConfiguration.IconSize;
+            this.propertiesToolStrip.MinimumSize = new System.Drawing.Size(150, coreConfiguration.IconSize.Height + 10);
+
+            this.btnCursor.Text = Language.GetString("editor_cursortool");
+            this.btnRect.Text = Language.GetString("editor_drawrectangle");
+            this.btnEllipse.Text = Language.GetString("editor_drawellipse");
+            this.btnLine.Text = Language.GetString("editor_drawline");
+            this.btnArrow.Text = Language.GetString("editor_drawarrow");
+            this.btnFreehand.Text = Language.GetString("editor_drawfreehand");
+            this.btnText.Text = Language.GetString("editor_drawtextbox");
+            this.btnSpeechBubble.Text = Language.GetString("editor_speechbubble");
+            this.btnStepLabel.Text = Language.GetString("editor_counter");
+            this.btnEmoji.Image = EmojiRenderer.GetBitmap("\uD83D\uDE0A", 32);
+            this.btnEmoji.Text = "Emoji (M)";
+            this.btnHighlight.Text = Language.GetString("editor_drawhighlighter");
+            this.btnObfuscate.Text = Language.GetString("editor_obfuscate");
+            this.toolStripSplitButton1.Text = Language.GetString("editor_effects");
+            this.addBorderToolStripMenuItem.Text = Language.GetString("editor_border");
+            this.addDropshadowToolStripMenuItem.Text = Language.GetString("editor_image_shadow");
+            this.tornEdgesToolStripMenuItem.Text = Language.GetString("editor_torn_edge");
+            this.grayscaleToolStripMenuItem.Text = Language.GetString("editor_grayscale");
+            this.invertToolStripMenuItem.Text = Language.GetString("editor_invert");
+            this.removeTransparencyToolStripMenuItem.Text = Language.GetString("editor_remove_transparency");
+            this.btnResize.Text = Language.GetString("editor_resize");
+            this.btnCrop.Text = Language.GetString("editor_crop");
+            this.rotateCwToolstripButton.Text = Language.GetString("editor_rotatecw");
+            this.rotateCcwToolstripButton.Text = Language.GetString("editor_rotateccw");
+            this.fileStripMenuItem.Text = Language.GetString("editor_file");
+            this.editToolStripMenuItem.Text = Language.GetString("editor_edit");
+            this.cutToolStripMenuItem.Text = Language.GetString("editor_cuttoclipboard");
+            this.copyToolStripMenuItem.Text = Language.GetString("editor_copytoclipboard");
+            this.pasteToolStripMenuItem.Text = Language.GetString("editor_pastefromclipboard");
+            this.duplicateToolStripMenuItem.Text = Language.GetString("editor_duplicate");
+            this.preferencesToolStripMenuItem.Text = Language.GetString("contextmenu_settings");
+            this.insert_window_toolstripmenuitem.Text = Language.GetString("editor_insertwindow");
+            this.obfuscateTextToolStripMenuItem.Text = Language.GetString("editor_obfuscate_text");
+            this.objectToolStripMenuItem.Text = Language.GetString("editor_object");
+            this.addRectangleToolStripMenuItem.Text = Language.GetString("editor_drawrectangle");
+            this.addEllipseToolStripMenuItem.Text = Language.GetString("editor_drawellipse");
+            this.drawLineToolStripMenuItem.Text = Language.GetString("editor_drawline");
+            this.drawArrowToolStripMenuItem.Text = Language.GetString("editor_drawarrow");
+            this.drawFreehandToolStripMenuItem.Text = Language.GetString("editor_drawfreehand");
+            this.addTextBoxToolStripMenuItem.Text = Language.GetString("editor_drawtextbox");
+            this.addSpeechBubbleToolStripMenuItem.Text = Language.GetString("editor_speechbubble");
+            this.addCounterToolStripMenuItem.Text = Language.GetString("editor_counter");
+            this.selectAllToolStripMenuItem.Text = Language.GetString("editor_selectall");
+            this.removeObjectToolStripMenuItem.Text = Language.GetString("editor_deleteelement");
+            this.arrangeToolStripMenuItem.Text = Language.GetString("editor_arrange");
+            this.upToTopToolStripMenuItem.Text = Language.GetString("editor_uptotop");
+            this.upOneLevelToolStripMenuItem.Text = Language.GetString("editor_uponelevel");
+            this.downOneLevelToolStripMenuItem.Text = Language.GetString("editor_downonelevel");
+            this.downToBottomToolStripMenuItem.Text = Language.GetString("editor_downtobottom");
+            this.saveElementsToolStripMenuItem.Text = Language.GetString("editor_save_objects");
+            this.loadElementsToolStripMenuItem.Text = Language.GetString("editor_load_objects");
+            this.pluginToolStripMenuItem.Text = Language.GetString("settings_plugins");
+            this.helpToolStripMenuItem.Text = Language.GetString("contextmenu_help");
+            this.helpToolStripMenuItem1.Text = Language.GetString("contextmenu_help");
+            this.aboutToolStripMenuItem.Text = Language.GetString("contextmenu_about");
+            this.btnSave.Text = Language.GetString("editor_save");
+            this.btnClipboard.Text = Language.GetString("editor_copyimagetoclipboard");
+            this.btnPrint.Text = Language.GetString("editor_print");
+            this.btnDelete.Text = Language.GetString("editor_deleteelement");
+            this.btnCut.Text = Language.GetString("editor_cuttoclipboard");
+            this.btnCopy.Text = Language.GetString("editor_copytoclipboard");
+            this.btnPaste.Text = Language.GetString("editor_pastefromclipboard");
+            this.btnSettings.Text = Language.GetString("contextmenu_settings");
+            this.btnHelp.Text = Language.GetString("contextmenu_help");
+            this.obfuscateModeButton.Text = Language.GetString("editor_obfuscate_mode");
+            this.pixelizeToolStripMenuItem.Text = Language.GetString("editor_obfuscate_pixelize");
+            this.blurToolStripMenuItem.Text = Language.GetString("editor_obfuscate_blur");
+            this.cropModeButton.Text = Language.GetString("editor_crop_mode");
+            this.defaultCropModeToolStripMenuItem.Text = Language.GetString("editor_cropmode_default");
+            this.verticalCropModeToolStripMenuItem.Text = Language.GetString("editor_cropmode_vertical");
+            this.horizontalCropModeToolStripMenuItem.Text = Language.GetString("editor_cropmode_horizontal");
+            this.autoCropModeToolStripMenuItem.Text = Language.GetString("editor_cropmode_auto");
+            this.highlightModeButton.Text = Language.GetString("editor_highlight_mode");
+            this.textHighlightMenuItem.Text = Language.GetString("editor_highlight_text");
+            this.areaHighlightMenuItem.Text = Language.GetString("editor_highlight_area");
+            this.grayscaleHighlightMenuItem.Text = Language.GetString("editor_highlight_grayscale");
+            this.magnifyMenuItem.Text = Language.GetString("editor_highlight_magnify");
+            this.btnFillColor.Text = Language.GetString("editor_backcolor");
+            this.btnLineColor.Text = Language.GetString("editor_forecolor");
+            this.counterLabel.Text = Language.GetString("editor_counter_startvalue");
+            this.lineThicknessLabel.Text = Language.GetString("editor_thickness");
+            this.fontSizeLabel.Text = Language.GetString("editor_fontsize");
+            this.fontBoldButton.Text = Language.GetString("editor_bold");
+            this.fontItalicButton.Text = Language.GetString("editor_italic");
+            this.textVerticalAlignmentButton.Text = Language.GetString("editor_align_vertical");
+            this.alignTopToolStripMenuItem.Text = Language.GetString("editor_align_top");
+            this.alignMiddleToolStripMenuItem.Text = Language.GetString("editor_align_middle");
+            this.alignBottomToolStripMenuItem.Text = Language.GetString("editor_align_bottom");
+            this.blurRadiusLabel.Text = Language.GetString("editor_blur_radius");
+            this.brightnessLabel.Text = Language.GetString("editor_brightness");
+            this.previewQualityLabel.Text = Language.GetString("editor_preview_quality");
+            this.magnificationFactorLabel.Text = Language.GetString("editor_magnification_factor");
+            this.pixelSizeLabel.Text = Language.GetString("editor_pixel_size");
+            this.arrowHeadsLabel.Text = Language.GetString("editor_arrowheads");
+            this.arrowHeadsDropDownButton.Text = Language.GetString("editor_arrowheads");
+            this.arrowHeadStartMenuItem.Text = Language.GetString("editor_arrowheads_start");
+            this.arrowHeadEndMenuItem.Text = Language.GetString("editor_arrowheads_end");
+            this.arrowHeadBothMenuItem.Text = Language.GetString("editor_arrowheads_both");
+            this.arrowHeadNoneMenuItem.Text = Language.GetString("editor_arrowheads_none");
+            this.shadowButton.Text = Language.GetString("editor_shadow");
+            this.btnConfirm.Text = Language.GetString("editor_confirm");
+            this.btnCancel.Text = Language.GetString("editor_cancel");
+            this.closeAllToolStripMenuItem.Text = Language.GetString("editor_close_all");
+            this.closeToolStripMenuItem.Text = Language.GetString("editor_close");
+            this.copyPathMenuItem.Text = Language.GetString("editor_copypathtoclipboard");
+            this.openDirectoryMenuItem.Text = Language.GetString("editor_opendirinexplorer");
+            this.textHorizontalAlignmentButton.Text = Language.GetString("editor_align_horizontal");
+            this.alignLeftToolStripMenuItem.Text = Language.GetString("editor_align_left");
+            this.alignCenterToolStripMenuItem.Text = Language.GetString("editor_align_center");
+            this.alignRightToolStripMenuItem.Text = Language.GetString("editor_align_right");
+            this.Text = Language.GetString("editor_title");
         }
     }
 }

@@ -32,13 +32,11 @@ using System.ServiceModel.Security;
 using System.Windows.Forms;
 using Dapplo.Windows.Common.Extensions;
 using Dapplo.Windows.Common.Structs;
-using Dapplo.Windows.Gdi32;
 using Dapplo.Windows.Icons;
-using Dapplo.Windows.User32;
 using Greenshot.Base.Controls;
 using Greenshot.Base.Core;
 using Greenshot.Base.Effects;
-using Greenshot.Base.IniFile;
+using Dapplo.Ini;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Drawing;
 using Greenshot.Base.Interfaces.Drawing.Adorners;
@@ -57,7 +55,7 @@ namespace Greenshot.Editor.Drawing
     public sealed class Surface : Control, ISurface, INotifyPropertyChanged
     {
         private static readonly ILog LOG = LogManager.GetLogger(typeof(Surface));
-        private static readonly CoreConfiguration conf = IniConfig.GetIniSection<CoreConfiguration>();
+        private static readonly ICoreConfiguration conf = IniConfigRegistry.GetSection<ICoreConfiguration>();
 
         // Property to identify the Surface ID
         private Guid _uniqueId = Guid.NewGuid();
@@ -109,6 +107,14 @@ namespace Greenshot.Editor.Drawing
         {
             add => _surfaceSizeChanged += value;
             remove => _surfaceSizeChanged -= value;
+        }
+
+        [NonSerialized] private SurfaceExpandedEventHandler _surfaceExpanded;
+
+        public event SurfaceExpandedEventHandler SurfaceExpanded
+        {
+            add => _surfaceExpanded += value;
+            remove => _surfaceExpanded -= value;
         }
 
         [NonSerialized] private SurfaceMessageEventHandler _surfaceMessage;
@@ -828,7 +834,7 @@ namespace Greenshot.Editor.Drawing
                     _undrawnElement = null;
                     break;
                 case DrawingModes.Emoji:
-                    _undrawnElement = new EmojiContainer(this, "🙂");
+                    _undrawnElement = new EmojiContainer(this);
                     break;
             }
 
@@ -1084,6 +1090,28 @@ namespace Greenshot.Editor.Drawing
             MakeUndoable(new SurfaceBackgroundChangeMemento(this, null), false);
             SetImage(newBitmap, false);
             Invalidate();
+        }
+
+        /// <summary>
+        /// Set the canvas to a new size using the given bounds.
+        /// Each parameter is the distance to expand in that direction.
+        /// </summary>
+        public void ResizeCanvas(int left, int right, int top, int bottom)
+        {
+            var resizeEffect = new ResizeCanvasEffect(left, right, top, bottom);
+            ApplyBitmapEffect(resizeEffect);
+            _surfaceExpanded(this, null);
+        }
+
+        /// <summary>
+        /// Set the canvas to a new size using the given expansion directions.
+        /// </summary>
+        /// <param name="expansion">The amount to expand in each direction.</param>
+        public void ResizeCanvas(Expansion expansion)
+        {
+            var resizeEffect = new ResizeCanvasEffect(expansion.Left, expansion.Right, expansion.Top, expansion.Bottom);
+            ApplyBitmapEffect(resizeEffect);
+            _surfaceExpanded(this, null);
         }
 
         /// <summary>
