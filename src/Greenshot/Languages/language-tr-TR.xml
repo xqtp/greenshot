@@ -234,6 +234,10 @@ Seçilen depolama konumunun yazma izinlerini kontrol edin.</resource>
 		<resource name="recipe_import">Tarif içe aktarma</resource>
 		<resource name="recipe_import_failed">Tarif yüklenemedi:</resource>
 		<resource name="recipe_import_title">Yakalama tarifini içe aktar</resource>
+        <resource name="recipe_gate_external_command">Harici komut</resource>
+        <resource name="recipe_gate_network_access">Ağ erişimi</resource>
+        <resource name="recipe_gate_file_system_access">Dosya sistemi erişimi</resource>
+        <resource name="recipe_gate_custom">Özel eylem</resource>
 		<resource name="settings_alwaysshowprintoptionsdialog">Her görüntü yazdırıldığında ayarlar penceresini göster</resource>
 		<resource name="settings_alwaysshowqualitydialog">Her görüntü kaydedildiğinde JPEG kalite seçim penceresini aç</resource>
 		<resource name="settings_applicationsettings">Uygulama ayarları</resource>
