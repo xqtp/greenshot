@@ -42,11 +42,11 @@ namespace Greenshot.Base.Pipeline.Sources
         private static readonly ILog Log = LogManager.GetLogger(typeof(ActiveWindowCaptureSource));
         private static readonly ICoreConfiguration CoreConfig = IniConfigRegistry.GetSection<ICoreConfiguration>();
 
-        private readonly RecipeStepConfig _config;
+        private readonly RecipeNodeConfig _config;
 
         public string Name => "ActiveWindowCaptureSource";
 
-        public ActiveWindowCaptureSource(RecipeStepConfig config = null)
+        public ActiveWindowCaptureSource(RecipeNodeConfig config = null)
         {
             _config = config;
         }
@@ -124,7 +124,10 @@ namespace Greenshot.Base.Pipeline.Sources
                     capture = WindowCaptureHelper.CaptureWindow(window, capture, windowCaptureMode);
                     if (capture != null)
                     {
-                        capture.MoveMouseLocation(capture.ScreenBounds.Location.X - capture.Location.X, capture.ScreenBounds.Location.Y - capture.Location.Y);
+                        if (capture.Cursor != null)
+                        {
+                            capture.MoveMouseLocation(capture.ScreenBounds.Location.X - capture.Location.X, capture.ScreenBounds.Location.Y - capture.Location.Y);
+                        }
                         capture.CaptureDetails.AddMetaData("source", "Window");
                         captured = true;
                     }

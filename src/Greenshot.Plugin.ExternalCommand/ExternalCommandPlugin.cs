@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Greenshot - a free and open source screenshot tool
  * Copyright (C) 2007-2026 Thomas Braun, Jens Klingen, Robin Krom
  * 
@@ -29,13 +29,15 @@ using Greenshot.Base.Core.Enums;
 using Dapplo.Ini;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Plugin;
+using Greenshot.Base.Pipeline;
+using Greenshot.Base.Recipes;
 
 namespace Greenshot.Plugin.ExternalCommand;
 
 /// <summary>
 /// An Plugin to run commands after an image was written
 /// </summary>
-public class ExternalCommandPlugin : IGreenshotPlugin
+public class ExternalCommandPlugin : IGreenshotPlugin, IRecipeStepProvider
 {
     private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(typeof(ExternalCommandPlugin));
     private static ICoreConfiguration CoreConfig;
@@ -110,7 +112,9 @@ public class ExternalCommandPlugin : IGreenshotPlugin
         string commandline = FilenameHelper.FillVariables(ExternalCommandConfig.Commandline[command], true);
         commandline = FilenameHelper.FillCmdVariables(commandline, true);
 
-        if (!File.Exists(commandline))
+        if (!File.Exists(commandline) &&
+            PluginUtils.GetExePath(commandline) == null &&
+            WindowsAppHelper.FindPackage(commandline, command) == null)
         {
             Log.WarnFormat("Found 'invalid' commandline {0} for command {1}", ExternalCommandConfig.Commandline[command], command);
             return false;
@@ -151,6 +155,34 @@ public class ExternalCommandPlugin : IGreenshotPlugin
         }
 
         serviceLocator.AddService(Destinations());
+        if (RecipeConfigHelper.IsRecipeFeatureEnabled())
+        {
+            serviceLocator.AddService<IRecipeStepProvider>(this);
+            StepRegistry.Instance.RegisterProvider(this);
+        }
+    }
+
+    /// <summary>
+    /// Registers recipe step factories provided by the ExternalCommand plugin.
+    /// </summary>
+    /// <param name="registry">The step registry.</param>
+    public void RegisterSteps(IStepRegistry registry)
+    {
+        if (registry == null) return;
+        registry.RegisterStepFactory("ExternalCommand", config => new ExternalCommandStep(config));
+        registry.RegisterStepFactory("ExecuteCommand", config => new ExternalCommandStep(config));
+        registry.RegisterStepFactory("RunCommand", config => new ExternalCommandStep(config));
+
+        if (ExternalCommandConfig?.Commands != null)
+        {
+            foreach (string command in ExternalCommandConfig.Commands)
+            {
+                if (!string.IsNullOrWhiteSpace(command))
+                {
+                    registry.RegisterStepFactory($"ExternalCommand.{command}", config => new ExternalCommandStep(config));
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -164,9 +196,25 @@ public class ExternalCommandPlugin : IGreenshotPlugin
         OnLanguageChanged(this, null);
 
         PluginUtils.AddToContextMenu(_itemPlugInRoot);
+        _itemPlugInRoot.Visible = ExternalCommandConfig?.QuicklinkEnabled ?? false;
+        if (ExternalCommandConfig is INotifyPropertyChanged notify)
+        {
+            notify.PropertyChanged += OnConfigPropertyChanged;
+        }
         Language.LanguageChanged += OnLanguageChanged;
         CoreConfig.PropertyChanged += OnIconSizeChanged;
         return true;
+    }
+
+    private void OnConfigPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(IExternalCommandConfiguration.QuicklinkEnabled))
+        {
+            if (_itemPlugInRoot != null)
+            {
+                _itemPlugInRoot.Visible = ExternalCommandConfig?.QuicklinkEnabled ?? false;
+            }
+        }
     }
 
     /// <summary>
@@ -203,13 +251,17 @@ public class ExternalCommandPlugin : IGreenshotPlugin
     {
         if (_itemPlugInRoot != null)
         {
-            _itemPlugInRoot.Text = Language.GetString("externalcommand", "contextmenu_configure");
+            _itemPlugInRoot.Text = PluginUtils.GetQuicklinkText("External command");
         }
     }
 
     public virtual void Shutdown()
     {
         Log.Debug("Shutdown");
+        if (ExternalCommandConfig is INotifyPropertyChanged notify)
+        {
+            notify.PropertyChanged -= OnConfigPropertyChanged;
+        }
         Language.LanguageChanged -= OnLanguageChanged;
         CoreConfig.PropertyChanged -= OnIconSizeChanged;
     }
@@ -225,6 +277,12 @@ public class ExternalCommandPlugin : IGreenshotPlugin
     public virtual void Configure()
     {
         Log.Debug("Configure called");
-        new SettingsForm().ShowDialog();
+        var mainForm = SimpleServiceProvider.Current.GetInstance<IGreenshotMainForm>(isOptional: true);
+        mainForm?.ShowSetting(Name);
+    }
+
+    public System.Windows.UIElement CreateConfigurationControl()
+    {
+        return new Forms.ExternalCommandConfigurationControl();
     }
 }

@@ -48,9 +48,9 @@ namespace Greenshot.Pipeline.Steps
         private static readonly ILog Log = LogManager.GetLogger(typeof(TextEffectStep));
 
         public string Name { get; }
-        public RecipeStepConfig Config { get; }
+        public RecipeNodeConfig Config { get; }
 
-        public TextEffectStep(RecipeStepConfig config)
+        public TextEffectStep(RecipeNodeConfig config)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             Name = config.Name ?? config.StepType ?? WellKnownStepTypes.TextEffect;
@@ -59,10 +59,18 @@ namespace Greenshot.Pipeline.Steps
         public async Task ExecuteAsync(CaptureFlowContext context, CancellationToken cancellationToken = default)
         {
             var payload = context.Payload;
-            if (payload == null) return;
+            if (payload is null)
+            {
+                context.LogStep("TextEffectStep skipped: Payload is null.");
+                return;
+            }
 
             var surface = payload.EnsureSurface();
-            if (surface?.Image == null) return;
+            if (surface?.Image == null) 
+            {
+                context.LogStep("TextEffectStep skipped: Surface or Image is null.");
+                return;
+            }
 
             // Retrieve registered OCR provider
             var ocrProvider = SimpleServiceProvider.Current.GetInstance<IOcrProvider>(isOptional: true);
@@ -341,7 +349,7 @@ namespace Greenshot.Pipeline.Steps
             ISurface surface,
             string effectType,
             NativeRect bounds,
-            RecipeStepConfig config)
+            RecipeNodeConfig config)
         {
             DrawableContainer container = null;
 

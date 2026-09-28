@@ -84,7 +84,7 @@ public class GreenshotMain
         // Init Log4NET
         LogFileLocation = LogHelper.InitializeLog4Net();
         // Get logger
-        LOG = LogManager.GetLogger(typeof(MainForm));
+        LOG = LogManager.GetLogger(typeof(GreenshotMain));
 
         Application.ThreadException += Application_ThreadException;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -137,7 +137,7 @@ public class GreenshotMain
                {
                    CaseSensitiveKeys = false,
                    EscapeSequences = false,
-                   LineContinuation = true,
+                   LineContinuation = false,
                    QuotedValues = false
                })
                .RegisterSection<ICoreConfiguration>(new CoreConfigurationImpl())
@@ -172,7 +172,7 @@ public class GreenshotMain
             return;
         }
 
-        new BugReportForm(exceptionText).ShowDialog();
+        UI.BugReportWindow.ShowReport(exceptionToLog, exceptionText);
     }
 
     internal static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -187,7 +187,7 @@ public class GreenshotMain
             return;
         }
 
-        new BugReportForm(exceptionText).ShowDialog();
+        UI.BugReportWindow.ShowReport(exceptionToLog, exceptionText);
     }
 
     internal static void Task_UnhandledException(object sender, UnobservedTaskExceptionEventArgs args)
@@ -198,7 +198,7 @@ public class GreenshotMain
             string exceptionText = EnvironmentInfo.BuildReport(exceptionToLog);
             LOG.Error("Exception caught in the UnobservedTaskException handler.");
             LOG.Error(exceptionText);
-            new BugReportForm(exceptionText).ShowDialog();
+            UI.BugReportWindow.ShowReport(exceptionToLog, exceptionText);
         }
         finally
         {

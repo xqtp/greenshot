@@ -41,7 +41,10 @@ namespace Greenshot.Editor.Destinations
         private static readonly ILog LOG = LogManager.GetLogger(typeof(EditorDestination));
         private static readonly IEditorConfiguration editorConfiguration = IniConfigRegistry.GetSection<IEditorConfiguration>();
         public const string DESIGNATION = "Editor";
-        private readonly IImageEditor editor;
+        private readonly IImageEditor _dedicatedEditor;
+        private readonly bool _replaceSurfaceInDedicatedEditor;
+        private readonly bool? _reuseAvailableEditor;
+        private readonly bool? _matchSizeToCapture;
         private static readonly Image greenshotIcon = GreenshotResources.GetGreenshotIcon().ToBitmap();
 
         public EditorDestination()
@@ -49,9 +52,16 @@ namespace Greenshot.Editor.Destinations
             // Do not remove, is needed for the framework
         }
 
-        public EditorDestination(IImageEditor editor)
+        public EditorDestination(IImageEditor dedicatedEditor, bool replaceSurfaceInDedicatedEditor = false)
         {
-            this.editor = editor;
+            this._dedicatedEditor = dedicatedEditor;
+            this._replaceSurfaceInDedicatedEditor = replaceSurfaceInDedicatedEditor;
+        }
+
+        public EditorDestination(bool? reuseAvailableEditor = null, bool? matchSizeToCapture = null)
+        {
+            _reuseAvailableEditor = reuseAvailableEditor;
+            _matchSizeToCapture = matchSizeToCapture;
         }
 
         public override string Designation => DESIGNATION;
@@ -60,12 +70,12 @@ namespace Greenshot.Editor.Destinations
         {
             get
             {
-                if (editor == null)
+                if (_dedicatedEditor == null)
                 {
                     return Language.GetString(LangKey.settings_destination_editor);
                 }
 
-                var title = editor.CaptureDetails?.Title;
+                var title = _dedicatedEditor.CaptureDetails?.Title;
                 if (title == null) return Language.GetString(LangKey.settings_destination_editor_add);
                 return Language.GetString(LangKey.settings_destination_editor_add) + " - " + title.Substring(0, Math.Min(20, title.Length));
             }
@@ -90,9 +100,10 @@ namespace Greenshot.Editor.Destinations
             ExportInformation exportInformation = new ExportInformation(Designation, Description);
 
             bool modified = surface.Modified;
-            if (editor == null)
+            if (_dedicatedEditor == null)
             {
-                if (editorConfiguration.ReuseEditor)
+                bool reuse = _reuseAvailableEditor ?? editorConfiguration.ReuseEditor;
+                if (reuse)
                 {
                     foreach (IImageEditor openedEditor in ImageEditorForm.Editors)
                     {
@@ -117,7 +128,7 @@ namespace Greenshot.Editor.Destinations
                 {
                     try
                     {
-                        ImageEditorForm editorForm = new ImageEditorForm(surface, !surface.Modified); // Output made??
+                        ImageEditorForm editorForm = new ImageEditorForm(surface, !surface.Modified, _matchSizeToCapture); // Output made??
 
                         if (!string.IsNullOrEmpty(captureDetails.Filename))
                         {
@@ -139,9 +150,15 @@ namespace Greenshot.Editor.Destinations
             {
                 try
                 {
-                    using (Image image = surface.GetImageForExport())
+                    if (_replaceSurfaceInDedicatedEditor)
                     {
-                        editor.Surface.AddImageContainer(image, 10, 10);
+                        _dedicatedEditor.Surface.Modified = false; // we explicitly replace the surface, so we can reset the modified flag
+                        _dedicatedEditor.Surface = surface;
+                    }
+                    else
+                    {
+                        using Image image = surface.GetImageForExport();
+                        _dedicatedEditor.Surface.AddImageContainer(image, 10, 10);
                     }
 
                     exportInformation.ExportMade = true;

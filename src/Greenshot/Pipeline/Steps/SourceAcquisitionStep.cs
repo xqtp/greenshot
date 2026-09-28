@@ -25,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Dapplo.Ini;
+using Dapplo.Windows.Common.Extensions;
 using Dapplo.Windows.Common.Structs;
 using Dapplo.Windows.User32;
 using Greenshot.Base.Core;
@@ -32,6 +33,7 @@ using Greenshot.Base.Interfaces;
 using Greenshot.Base.Pipeline;
 using Greenshot.Base.Pipeline.Sources;
 using Greenshot.Base.Recipes;
+using Greenshot.Triggers;
 using log4net;
 
 namespace Greenshot.Pipeline.Steps
@@ -47,9 +49,9 @@ namespace Greenshot.Pipeline.Steps
         private static readonly ICoreConfiguration CoreConfig = IniConfigRegistry.GetSection<ICoreConfiguration>();
 
         public string Name { get; }
-        public RecipeStepConfig Config { get; }
+        public RecipeNodeConfig Config { get; }
 
-        public SourceAcquisitionStep(RecipeStepConfig config)
+        public SourceAcquisitionStep(RecipeNodeConfig config)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             Name = config.Name ?? "SourceAcquisitionStep";
@@ -58,6 +60,12 @@ namespace Greenshot.Pipeline.Steps
         public async Task ExecuteAsync(CaptureFlowContext context, CancellationToken cancellationToken = default)
         {
             context.State = CaptureFlowState.Acquiring;
+
+            // 0. Check if payload is already pre-supplied 
+            if (context.Payload != null)
+            {
+                Log.Warn($"Source {Name} already has a pre-supplied payload. This should not happen.");
+            }
 
             // 1. Pre-capture preparation: tray icon reset & delay
             await PreparePreCaptureAsync(context, cancellationToken).ConfigureAwait(false);
@@ -76,7 +84,13 @@ namespace Greenshot.Pipeline.Steps
             {
                 var composite = CreateScreenWithCursorSource(captureMouse, "PreSuppliedRegionSource");
                 var payload = await composite.AcquireAsync(context, cancellationToken).ConfigureAwait(false);
-                payload?.RawCapture?.Crop(preRect);
+
+                if (payload?.RawCapture != null )
+                {
+                    // Offset to bitmap coordinates for cropping
+                    NativeRect screenOffsetRect = preRect.Offset(-payload.RawCapture.Location.X, -payload.RawCapture.Location.Y);
+                    payload.RawCapture.Crop(screenOffsetRect);
+                }
                 if (alignDpi && payload != null)
                 {
                     AlignDpi(payload);
@@ -87,10 +101,7 @@ namespace Greenshot.Pipeline.Steps
 
             // Check if window targeting parameters are specified in config
             bool hasTargetWindowConfig = !string.IsNullOrEmpty(Config.GetParameter<string>("WindowTitle")) ||
-                                         !string.IsNullOrEmpty(Config.GetParameter<string>("windowTitle")) ||
                                          !string.IsNullOrEmpty(Config.GetParameter<string>("WindowTitlePattern")) ||
-                                         !string.IsNullOrEmpty(Config.GetParameter<string>("windowTitlePattern")) ||
-                                         !string.IsNullOrEmpty(Config.GetParameter<string>("ProcessName")) ||
                                          !string.IsNullOrEmpty(Config.GetParameter<string>("processName"));
 
             // 5. Instantiate source based on SourceType
@@ -122,6 +133,9 @@ namespace Greenshot.Pipeline.Steps
 
                 CaptureSourceType.File =>
                     new FileCaptureSource(),
+
+                CaptureSourceType.CurrentEditor =>
+                    new CurrentEditorCaptureSource(),
 
                 _ => null
             };

@@ -114,6 +114,14 @@ namespace Greenshot.Triggers
             }
         }
 
+        public IReadOnlyList<IEditorTrigger> GetEditorTriggers()
+        {
+            lock (_triggers)
+            {
+                return _triggers.Values.OfType<IEditorTrigger>().ToList();
+            }
+        }
+
         public HotkeyTrigger FindHotkeyTriggerForRecipe(string recipeId)
         {
             if (string.IsNullOrEmpty(recipeId)) return null;
@@ -146,6 +154,8 @@ namespace Greenshot.Triggers
 
                 foreach (var recipe in recipes)
                 {
+                    if (!recipe.IsEnabled) continue;
+
                     if (recipe.Triggers == null || recipe.Triggers.Count == 0)
                     {
                         if (!recipe.IsBuiltIn && recipe.ShowInContextMenu)
@@ -180,6 +190,21 @@ namespace Greenshot.Triggers
                             int order = tc.GetParameter<int>("Order", 0);
                             string triggerId = $"trigger_recipe_{recipe.Id}_menu_{i}";
                             RegisterTrigger(new ContextMenuTrigger(triggerId, tc.Name ?? menuText, menuText, recipe.Id, group, order));
+                        }
+                        else if (string.Equals(tc.TriggerType, TriggerConfig.TypeEditor, StringComparison.OrdinalIgnoreCase))
+                        {
+                            string menuText = tc.GetParameter<string>("MenuItemText") ?? recipe.Name;
+                            string group = tc.GetParameter<string>("Group", "Recipes");
+                            int order = tc.GetParameter<int>("Order", 0);
+                            string triggerId = $"trigger_recipe_{recipe.Id}_editor_{i}";
+                            RegisterTrigger(new EditorTrigger(triggerId, tc.Name ?? menuText, menuText, recipe.Id, group, order));
+                        }
+                        else if (string.Equals(tc.TriggerType, TriggerConfig.TypeClipboard, StringComparison.OrdinalIgnoreCase))
+                        {
+                            bool onImageCopied = tc.GetParameter<bool>("OnImageCopied", true);
+                            string formatFilter = tc.GetParameter<string>("FormatFilter");
+                            string triggerId = $"trigger_recipe_{recipe.Id}_clipboard_{i}";
+                            RegisterTrigger(new ClipboardTrigger(triggerId, tc.Name ?? $"{recipe.Name} Clipboard Monitor", recipe.Id, onImageCopied, formatFilter));
                         }
                     }
 
@@ -270,11 +295,19 @@ namespace Greenshot.Triggers
 
             if (recipe != null)
             {
+                if (!recipe.IsEnabled)
+                {
+                    Log.WarnFormat("Trigger fired for deactivated recipe '{0}', ignoring.", recipe.Id);
+                    return;
+                }
+
                 var pipeline = SimpleServiceProvider.Current.GetInstance<ICapturePipeline>();
                 if (pipeline != null)
                 {
                     var trigger = sender as ITrigger;
-                    pipeline.ExecuteAsync(recipe, trigger, ctx =>
+                    var recipeToExecute = TriggerRecipePreparer.Prepare(recipe, trigger);
+
+                    pipeline.ExecuteAsync(recipeToExecute, trigger, ctx =>
                     {
                         if (e.Parameters != null)
                         {

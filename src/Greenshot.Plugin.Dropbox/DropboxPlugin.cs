@@ -28,6 +28,8 @@ using Greenshot.Base.Core;
 using Dapplo.Ini;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Plugin;
+using Greenshot.Base.Pipeline;
+using Greenshot.Base.Recipes;
 using Greenshot.Plugin.Dropbox.Forms;
 
 namespace Greenshot.Plugin.Dropbox;
@@ -35,7 +37,7 @@ namespace Greenshot.Plugin.Dropbox;
 /// <summary>
 /// This is the Dropbox base code
 /// </summary>
-public class DropboxPlugin : IGreenshotPlugin
+public class DropboxPlugin : IGreenshotPlugin, IRecipeStepProvider
 {
     private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(typeof(DropboxPlugin));
     private static IDropboxConfiguration _config;
@@ -83,6 +85,23 @@ public class DropboxPlugin : IGreenshotPlugin
     {
         _resources = new ComponentResourceManager(typeof(DropboxPlugin));
         serviceLocator.AddService<IDestination>(new DropboxDestination(this));
+        if (RecipeConfigHelper.IsRecipeFeatureEnabled())
+        {
+            serviceLocator.AddService<IRecipeStepProvider>(this);
+            StepRegistry.Instance.RegisterProvider(this);
+        }
+    }
+
+    /// <summary>
+    /// Registers recipe step factories provided by the Dropbox plugin.
+    /// </summary>
+    /// <param name="registry">The step registry.</param>
+    public void RegisterSteps(IStepRegistry registry)
+    {
+        if (registry == null) return;
+        registry.RegisterStepFactory("Dropbox", config => new DropboxStep(config, this));
+        registry.RegisterStepFactory("DropboxUpload", config => new DropboxStep(config, this));
+        registry.RegisterStepFactory("UploadToDropbox", config => new DropboxStep(config, this));
     }
 
     /// <summary>
@@ -92,21 +111,37 @@ public class DropboxPlugin : IGreenshotPlugin
     {
         _itemPlugInConfig = new ToolStripMenuItem
         {
-            Text = Language.GetString("dropbox", LangKey.Configure),
-            Image = (Image) _resources.GetObject("Dropbox")
+            Text = PluginUtils.GetQuicklinkText("Dropbox"),
+            Image = (Image) _resources.GetObject("Dropbox"),
+            Visible = _config?.QuicklinkEnabled ?? false
         };
         _itemPlugInConfig.Click += ConfigMenuClick;
 
         PluginUtils.AddToContextMenu(_itemPlugInConfig);
         Language.LanguageChanged += OnLanguageChanged;
+        if (_config is INotifyPropertyChanged notify)
+        {
+            notify.PropertyChanged += OnConfigPropertyChanged;
+        }
         return true;
+    }
+
+    private void OnConfigPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(IDropboxConfiguration.QuicklinkEnabled))
+        {
+            if (_itemPlugInConfig != null)
+            {
+                _itemPlugInConfig.Visible = _config?.QuicklinkEnabled ?? false;
+            }
+        }
     }
 
     public void OnLanguageChanged(object sender, EventArgs e)
     {
         if (_itemPlugInConfig != null)
         {
-            _itemPlugInConfig.Text = Language.GetString("dropbox", LangKey.Configure);
+            _itemPlugInConfig.Text = PluginUtils.GetQuicklinkText("Dropbox");
         }
     }
 
@@ -114,6 +149,10 @@ public class DropboxPlugin : IGreenshotPlugin
     {
         Log.Debug("Dropbox Plugin shutdown.");
         Language.LanguageChanged -= OnLanguageChanged;
+        if (_config is INotifyPropertyChanged notify)
+        {
+            notify.PropertyChanged -= OnConfigPropertyChanged;
+        }
     }
 
     /// <summary>
@@ -121,21 +160,18 @@ public class DropboxPlugin : IGreenshotPlugin
     /// </summary>
     public void Configure()
     {
-        ShowConfigDialog();
+        var mainForm = SimpleServiceProvider.Current.GetInstance<IGreenshotMainForm>(isOptional: true);
+        mainForm?.ShowSetting(Name);
+    }
+
+    public System.Windows.UIElement CreateConfigurationControl()
+    {
+        return new Forms.DropboxConfigurationControl(_config);
     }
 
     public void ConfigMenuClick(object sender, EventArgs eventArgs)
     {
-        ShowConfigDialog();
-    }
-
-    /// <summary>
-    /// Opens the Dropbox settings dialog.
-    /// </summary>
-    /// <returns>true if OK was pressed; false if cancelled</returns>
-    private bool ShowConfigDialog()
-    {
-        return new SettingsForm().ShowDialog() == DialogResult.OK;
+        Configure();
     }
 
     /// <summary>

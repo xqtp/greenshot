@@ -44,6 +44,9 @@ using Greenshot.Base.Interfaces.Drawing;
 using Greenshot.Base.Interfaces.Forms;
 using Greenshot.Base.Interfaces.Ocr;
 using Greenshot.Base.Interfaces.Plugin;
+using Greenshot.Base.Pipeline;
+using Greenshot.Base.Recipes;
+using Greenshot.Base.Triggers;
 using Greenshot.Editor.Configuration;
 using Greenshot.Editor.Controls.Emoji;
 using Greenshot.Editor.Destinations;
@@ -135,8 +138,31 @@ namespace Greenshot.Editor.Forms
             propertiesToolStrip.ImageScalingSize = newSize;
             propertiesToolStrip.MinimumSize = new Size(150, newSize.Height + 10);
             _surface?.AdjustToDpi(newDpi);
+
+            // The framework's own DPI-triggered scaling runs after this handler returns, and it resizes
+            // the canvas control along with every other control on the form - even though the canvas size
+            // must always be image-size * zoom-factor in device pixels, independent of monitor DPI. Redo
+            // the adjustment once that scaling has completed, so the canvas ends up at its correct size
+            // instead of being left clipped.
+if (!IsDisposed && !Disposing && IsHandleCreated)
+{
+    BeginInvoke(new MethodInvoker(() =>
+    {
+        if (IsDisposed || Disposing || _surface?.Image == null)
+        {
+            return;
+        }
+
+        _surface.AdjustToDpi(DeviceDpi);
+        AlignCanvasPositionAfterResize();
+    }));
+}
+
             UpdateUi();
         }
+
+        private bool? _matchSizeToCapture;
+        private bool MatchSizeToCapture => _matchSizeToCapture ?? EditorConfiguration.MatchSizeToCapture;
 
         public ImageEditorForm()
         {
@@ -145,8 +171,9 @@ namespace Greenshot.Editor.Forms
             Initialize(surface, false);
         }
 
-        public ImageEditorForm(ISurface surface, bool outputMade)
+        public ImageEditorForm(ISurface surface, bool outputMade, bool? matchSizeToCapture = null)
         {
+            _matchSizeToCapture = matchSizeToCapture;
             Initialize(surface, outputMade);
         }
 
@@ -161,7 +188,34 @@ namespace Greenshot.Editor.Forms
             InitializeComponent();
             InitializeLanguage();
             // Add the destinations after the form is loaded, this is needed for the dynamic destinations which need the handle of the form
-            Load += (s, eventArgs) => AddDestinations();
+            Load += (s, eventArgs) =>
+            {
+                AddDestinations();
+                UpdateRecipesMenu();
+            };
+
+            EventHandler recipesChangedHandler = (s, e) =>
+            {
+                if (IsDisposed || Disposing) return;
+                if (InvokeRequired)
+                {
+                    try { BeginInvoke(new MethodInvoker(UpdateRecipesMenu)); } catch { }
+                }
+                else
+                {
+                    UpdateRecipesMenu();
+                }
+            };
+
+            var recipeManager = SimpleServiceProvider.Current.GetInstance<IRecipeManager>(isOptional: true);
+            if (recipeManager != null)
+            {
+                recipeManager.RecipesChanged += recipesChangedHandler;
+                FormClosed += (s, e) =>
+                {
+                    recipeManager.RecipesChanged -= recipesChangedHandler;
+                };
+            }
 
             // Make sure the editor is placed on the same location as the last editor was on close
             // But only if this still exists, else it will be reset (BUG-1812)
@@ -547,6 +601,9 @@ namespace Greenshot.Editor.Forms
                 // TODO: Fix that we only open files, like in the tooltip
                 switch (eventArgs.MessageType)
                 {
+                    case SurfaceMessageTyp.Error:
+                        UpdateStatusLabel(dateTime + " - ⚠ " + eventArgs.Message, isError: true);
+                        break;
                     case SurfaceMessageTyp.FileSaved:
                         // Put the event message on the status label and attach the context menu
                         UpdateStatusLabel(dateTime + " - " + eventArgs.Message, fileSavedStatusContextMenu);
@@ -608,7 +665,7 @@ namespace Greenshot.Editor.Forms
         /// <param name="e"></param>
         private void SurfaceSizeChanged(object sender, EventArgs e)
         {
-            if (EditorConfiguration.MatchSizeToCapture)
+            if (MatchSizeToCapture)
             {
                 Size = GetOptimalWindowSize();
             }
@@ -1337,9 +1394,10 @@ namespace Greenshot.Editor.Forms
             pasteToolStripMenuItem.Enabled = hasClipboard && !_controlsDisabledDueToConfirmable;
         }
 
-        private void UpdateStatusLabel(string text, ContextMenuStrip contextMenu = null)
+        private void UpdateStatusLabel(string text, ContextMenuStrip contextMenu = null, bool isError = false)
         {
             statusLabel.Text = text;
+            statusLabel.ForeColor = isError ? Color.DarkRed : SystemColors.ControlText;
             statusStrip1.ContextMenuStrip = contextMenu;
         }
 
@@ -1841,10 +1899,8 @@ namespace Greenshot.Editor.Forms
                 return;
             }
 
-            using (var dialog = new TextObfuscationForm(_surface, ocrLines))
-            {
-                dialog.ShowDialog(this);
-            }
+            var dialog = new TextObfuscationWindow(_surface, ocrLines);
+            dialog.ShowDialog(this);
         }
 
         private void Contextmenu_window_Click(object sender, EventArgs e)
@@ -1935,8 +1991,8 @@ namespace Greenshot.Editor.Forms
                     apply = true;
                     break;
                 case MouseButtons.Right:
-                    var result = new DropShadowSettingsForm(dropShadowEffect).ShowDialog(this);
-                    apply = result == DialogResult.OK;
+                    var result = new DropShadowSettingsWindow(dropShadowEffect).ShowDialog(this);
+                    apply = result == true;
                     break;
                 default:
                     return;
@@ -1958,8 +2014,8 @@ namespace Greenshot.Editor.Forms
         private void BtnResizeClick(object sender, EventArgs e)
         {
             var resizeEffect = new ResizeEffect(_surface.Image.Width, _surface.Image.Height, true);
-            var result = new ResizeSettingsForm(resizeEffect).ShowDialog(this);
-            if (result == DialogResult.OK)
+            var result = new ResizeSettingsWindow(resizeEffect).ShowDialog(this);
+            if (result == true)
             {
                 _surface.ApplyBitmapEffect(resizeEffect);
                 UpdateUndoRedoSurfaceDependencies();
@@ -1981,8 +2037,8 @@ namespace Greenshot.Editor.Forms
                     apply = true;
                     break;
                 case MouseButtons.Right:
-                    var result = new TornEdgeSettingsForm(tornEdgeEffect).ShowDialog(this);
-                    apply = result == DialogResult.OK;
+                    var result = new TornEdgeSettingsWindow(tornEdgeEffect).ShowDialog(this);
+                    apply = result == true;
                     break;
                 default:
                     return;
@@ -2338,6 +2394,7 @@ namespace Greenshot.Editor.Forms
             this.downToBottomToolStripMenuItem.Text = Language.GetString("editor_downtobottom");
             this.saveElementsToolStripMenuItem.Text = Language.GetString("editor_save_objects");
             this.loadElementsToolStripMenuItem.Text = Language.GetString("editor_load_objects");
+            this.recipesToolStripMenuItem.Text = Language.GetString("contextmenu_recipes") ?? "Recipes";
             this.pluginToolStripMenuItem.Text = Language.GetString("settings_plugins");
             this.helpToolStripMenuItem.Text = Language.GetString("contextmenu_help");
             this.helpToolStripMenuItem1.Text = Language.GetString("contextmenu_help");
@@ -2398,6 +2455,76 @@ namespace Greenshot.Editor.Forms
             this.alignCenterToolStripMenuItem.Text = Language.GetString("editor_align_center");
             this.alignRightToolStripMenuItem.Text = Language.GetString("editor_align_right");
             this.Text = Language.GetString("editor_title");
+        }
+
+        /// <summary>
+        /// Populates the 'Recipes' top-level menu with all registered EditorTrigger entries.
+        /// </summary>
+        private void UpdateRecipesMenu()
+        {
+            if (IsDisposed || Disposing || recipesToolStripMenuItem == null) return;
+
+            recipesToolStripMenuItem.DropDownItems.Clear();
+
+            var triggerManager = SimpleServiceProvider.Current.GetInstance<ITriggerManager>(isOptional: true);
+            var recipeManager = SimpleServiceProvider.Current.GetInstance<IRecipeManager>(isOptional: true);
+
+            if (triggerManager == null || recipeManager == null)
+            {
+                recipesToolStripMenuItem.Visible = false;
+                return;
+            }
+
+            int count = 0;
+            var editorTriggers = triggerManager.GetEditorTriggers();
+            if (editorTriggers != null)
+            {
+                foreach (var trigger in editorTriggers)
+                {
+                    var recipe = recipeManager.GetRecipeById(trigger.TargetRecipeId);
+                    if (recipe == null || !recipe.IsEnabled) continue;
+
+                    string menuText = !string.IsNullOrWhiteSpace(trigger.MenuItemText)
+                        ? trigger.MenuItemText
+                        : (!string.IsNullOrWhiteSpace(trigger.Name) ? trigger.Name : recipe.Name);
+
+                    var item = new ToolStripMenuItem(menuText);
+                    item.Click += (s, ev) =>
+                    {
+                        trigger.Fire(this);
+                    };
+
+                    recipesToolStripMenuItem.DropDownItems.Add(item);
+                    count++;
+                }
+            }
+
+            var editorService = SimpleServiceProvider.Current.GetInstance<IRecipeEditorService>(isOptional: true);
+            if (editorService != null)
+            {
+                if (count > 0)
+                {
+                    recipesToolStripMenuItem.DropDownItems.Add(new ToolStripSeparator());
+                }
+
+                var managerItem = new ToolStripMenuItem(Language.GetString("contextmenu_managerecipes") ?? "Recipe Manager...");
+                managerItem.Click += (s, ev) =>
+                {
+                    editorService.OpenRecipeManager();
+                };
+                recipesToolStripMenuItem.DropDownItems.Add(managerItem);
+
+                var editorItem = new ToolStripMenuItem(Language.GetString("contextmenu_recipeeditor") ?? "Recipe Editor...");
+                editorItem.Click += (s, ev) =>
+                {
+                    editorService.OpenEditor();
+                };
+                recipesToolStripMenuItem.DropDownItems.Add(editorItem);
+
+                count += 2;
+            }
+
+            recipesToolStripMenuItem.Visible = count > 0;
         }
     }
 }

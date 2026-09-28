@@ -27,6 +27,8 @@ using Greenshot.Base.Core;
 using Dapplo.Ini;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Plugin;
+using Greenshot.Base.Pipeline;
+using Greenshot.Base.Recipes;
 using Greenshot.Plugin.Imgur.Forms;
 
 namespace Greenshot.Plugin.Imgur;
@@ -34,7 +36,7 @@ namespace Greenshot.Plugin.Imgur;
 /// <summary>
 /// This is the ImgurPlugin code
 /// </summary>
-public class ImgurPlugin : IGreenshotPlugin
+public class ImgurPlugin : IGreenshotPlugin, IRecipeStepProvider
 {
     private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(typeof(ImgurPlugin));
     private static IImgurConfiguration _config;
@@ -90,6 +92,24 @@ public class ImgurPlugin : IGreenshotPlugin
     public void RegisterServices(IServiceLocator serviceLocator)
     {
         _resources = new ComponentResourceManager(typeof(ImgurPlugin));
+        serviceLocator.AddService<IDestination>(new ImgurDestination());
+        if (RecipeConfigHelper.IsRecipeFeatureEnabled())
+        {
+            serviceLocator.AddService<IRecipeStepProvider>(this);
+            StepRegistry.Instance.RegisterProvider(this);
+        }
+    }
+
+    /// <summary>
+    /// Registers recipe step factories provided by the Imgur plugin.
+    /// </summary>
+    /// <param name="registry">The step registry.</param>
+    public void RegisterSteps(IStepRegistry registry)
+    {
+        if (registry == null) return;
+        registry.RegisterStepFactory("Imgur", config => new ImgurStep(config));
+        registry.RegisterStepFactory("ImgurUpload", config => new ImgurStep(config));
+        registry.RegisterStepFactory("UploadToImgur", config => new ImgurStep(config));
     }
 
     /// <summary>
@@ -98,27 +118,40 @@ public class ImgurPlugin : IGreenshotPlugin
     /// <returns>true if plugin is initialized, false if not (doesn't show)</returns>
     public bool Start()
     {
-        ToolStripMenuItem itemPlugInRoot = new ToolStripMenuItem("Imgur")
+        _itemPlugInConfig = new ToolStripMenuItem(PluginUtils.GetQuicklinkText("Imgur"))
         {
-            Image = (Image) _resources.GetObject("Imgur")
+            Image = (Image) _resources.GetObject("Imgur"),
+            Visible = _config?.QuicklinkEnabled ?? false
         };
+        _itemPlugInConfig.Click += delegate { Configure(); };
 
-        _itemPlugInConfig = new ToolStripMenuItem(Language.GetString("imgur", LangKey.configure));
-        _itemPlugInConfig.Click += delegate { ShowConfigDialog(); };
-        itemPlugInRoot.DropDownItems.Add(_itemPlugInConfig);
-
-        PluginUtils.AddToContextMenu(itemPlugInRoot);
+        PluginUtils.AddToContextMenu(_itemPlugInConfig);
         Language.LanguageChanged += OnLanguageChanged;
+        if (_config is INotifyPropertyChanged notify)
+        {
+            notify.PropertyChanged += OnConfigPropertyChanged;
+        }
 
         UpdateHistoryMenuItem();
         return true;
+    }
+
+    private void OnConfigPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(IImgurConfiguration.QuicklinkEnabled))
+        {
+            if (_itemPlugInConfig != null)
+            {
+                _itemPlugInConfig.Visible = _config?.QuicklinkEnabled ?? false;
+            }
+        }
     }
 
     public void OnLanguageChanged(object sender, EventArgs e)
     {
         if (_itemPlugInConfig != null)
         {
-            _itemPlugInConfig.Text = Language.GetString("imgur", LangKey.configure);
+            _itemPlugInConfig.Text = PluginUtils.GetQuicklinkText("Imgur");
         }
 
         if (_historyMenuItem != null)
@@ -172,15 +205,12 @@ public class ImgurPlugin : IGreenshotPlugin
     /// </summary>
     public virtual void Configure()
     {
-        ShowConfigDialog();
+        var mainForm = SimpleServiceProvider.Current.GetInstance<IGreenshotMainForm>(isOptional: true);
+        mainForm?.ShowSetting(Name);
     }
 
-    /// <summary>
-    /// Opens the Imgur settings dialog.
-    /// </summary>
-    /// <returns>true if OK was pressed; false if cancelled</returns>
-    private bool ShowConfigDialog()
+    public System.Windows.UIElement CreateConfigurationControl()
     {
-        return new SettingsForm().ShowDialog() == DialogResult.OK;
+        return new Forms.ImgurConfigurationControl(_config);
     }
 }

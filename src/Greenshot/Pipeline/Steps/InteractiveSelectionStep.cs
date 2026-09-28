@@ -50,9 +50,9 @@ namespace Greenshot.Pipeline.Steps
         private readonly IInteractiveCaptureSelector _selector;
 
         public string Name { get; }
-        public RecipeStepConfig Config { get; }
+        public RecipeNodeConfig Config { get; }
 
-        public InteractiveSelectionStep(RecipeStepConfig config, IInteractiveCaptureSelector selector = null)
+        public InteractiveSelectionStep(RecipeNodeConfig config, IInteractiveCaptureSelector selector = null)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             Name = config.Name ?? "InteractiveSelectionStep";
@@ -72,7 +72,6 @@ namespace Greenshot.Pipeline.Steps
             if (context.Properties.TryGetValue("PreSuppliedRegion", out var regionObj) &&
                 regionObj is NativeRect preRect && !preRect.IsEmpty)
             {
-                payload.RawCapture.Crop(preRect);
                 return;
             }
 

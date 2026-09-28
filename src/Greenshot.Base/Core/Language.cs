@@ -25,6 +25,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Dapplo.Ini;
 using log4net;
 using Microsoft.Win32;
 
@@ -57,9 +58,6 @@ namespace Greenshot.Base.Core
         /// </summary>
         static Language()
         {
-            IniConfigHelper.EnsureInitialized();
-
-
             if (!LogHelper.IsInitialized)
             {
                 Log.Warn("Log4net hasn't been initialized yet! (Design mode?)");
@@ -109,6 +107,13 @@ namespace Greenshot.Base.Core
                         }
                     }
                 }
+
+                // Application base directory (e.g. test runner or output folder)
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                if (!string.IsNullOrEmpty(baseDir))
+                {
+                    AddPath(Path.Combine(baseDir, @"Languages"));
+                }
             }
             catch (Exception pathException)
             {
@@ -137,9 +142,21 @@ namespace Greenshot.Base.Core
                 Log.Warn("Couldn't read the installed language groups.", e);
             }
 
-            var coreConfig = IniConfigHelper.EnsureSection<ICoreConfiguration>(() => new CoreConfigurationImpl());
             ScanFiles();
-            if (!string.IsNullOrEmpty(coreConfig.Language))
+
+            // Direct registry lookup for production (fast path, no designer overhead)
+            ICoreConfiguration coreConfig = null;
+            if (IniConfigRegistry.TryGet("greenshot.ini", out var iniConfig))
+            {
+                coreConfig = iniConfig.GetSection<ICoreConfiguration>();
+            }
+            else
+            {
+                // Fallback for Windows Forms Designer / uninitialized unit tests only
+                coreConfig = IniConfigHelper.EnsureSection<ICoreConfiguration>(() => new CoreConfigurationImpl());
+            }
+
+            if (!string.IsNullOrEmpty(coreConfig?.Language))
             {
                 CurrentLanguage = coreConfig.Language;
                 if (CurrentLanguage != null && CurrentLanguage != coreConfig.Language)
@@ -152,7 +169,7 @@ namespace Greenshot.Base.Core
             {
                 Log.Warn("Couldn't set language from configuration, changing to default. Installation problem?");
                 CurrentLanguage = DefaultLanguage;
-                if (CurrentLanguage != null)
+                if (CurrentLanguage != null && coreConfig != null)
                 {
                     coreConfig.Language = CurrentLanguage;
                 }
@@ -770,16 +787,16 @@ namespace Greenshot.Base.Core
         /// Get the resource for key, format with with string.format an supply the parameters
         /// </summary>
         /// <param name="key">string</param>
-        /// <param name="param">object</param>
+        /// <param name="params">object[] parameters</param>
         /// <returns>formatted resource or a "string ###key### not found"</returns>
-        public static string GetFormattedString(string key, object param)
+        public static string GetFormattedString(string key, params object[] @params)
         {
             if (!Resources.TryGetValue(key, out var returnValue))
             {
                 return "string ###" + key + "### not found";
             }
 
-            return string.Format(returnValue, param);
+            return string.Format(returnValue, @params);
         }
     }
 }

@@ -29,6 +29,8 @@ using Greenshot.Base.Core;
 using Dapplo.Ini;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Plugin;
+using Greenshot.Base.Pipeline;
+using Greenshot.Base.Recipes;
 using Greenshot.Plugin.Box.Forms;
 
 namespace Greenshot.Plugin.Box;
@@ -36,7 +38,7 @@ namespace Greenshot.Plugin.Box;
 /// <summary>
 /// This is the Box base code
 /// </summary>
-public class BoxPlugin : IGreenshotPlugin
+public class BoxPlugin : IGreenshotPlugin, IRecipeStepProvider
 {
     private static readonly log4net.ILog LOG = log4net.LogManager.GetLogger(typeof(BoxPlugin));
     private static IBoxConfiguration _config;
@@ -79,13 +81,27 @@ public class BoxPlugin : IGreenshotPlugin
         _config = section;
     }
 
-    /// <summary>
-    /// Implementation of RegisterServices phase: register DI services after config is loaded.
-    /// </summary>
     public void RegisterServices(IServiceLocator serviceLocator)
     {
         _resources = new ComponentResourceManager(typeof(BoxPlugin));
         serviceLocator.AddService<IDestination>(new BoxDestination(this));
+        if (RecipeConfigHelper.IsRecipeFeatureEnabled())
+        {
+            serviceLocator.AddService<IRecipeStepProvider>(this);
+            StepRegistry.Instance.RegisterProvider(this);
+        }
+    }
+
+    /// <summary>
+    /// Registers recipe step factories provided by the Box plugin.
+    /// </summary>
+    /// <param name="registry">The step registry.</param>
+    public void RegisterSteps(IStepRegistry registry)
+    {
+        if (registry == null) return;
+        registry.RegisterStepFactory("Box", config => new BoxStep(config, this));
+        registry.RegisterStepFactory("BoxUpload", config => new BoxStep(config, this));
+        registry.RegisterStepFactory("UploadToBox", config => new BoxStep(config, this));
     }
 
     /// <summary>
@@ -96,20 +112,36 @@ public class BoxPlugin : IGreenshotPlugin
         _itemPlugInConfig = new ToolStripMenuItem
         {
             Image = (Image) _resources.GetObject("Box"),
-            Text = Language.GetString("box", LangKey.Configure)
+            Text = PluginUtils.GetQuicklinkText("Box"),
+            Visible = _config?.QuicklinkEnabled ?? false
         };
         _itemPlugInConfig.Click += ConfigMenuClick;
 
         PluginUtils.AddToContextMenu(_itemPlugInConfig);
         Language.LanguageChanged += OnLanguageChanged;
+        if (_config is INotifyPropertyChanged notify)
+        {
+            notify.PropertyChanged += OnConfigPropertyChanged;
+        }
         return true;
+    }
+
+    private void OnConfigPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(IBoxConfiguration.QuicklinkEnabled))
+        {
+            if (_itemPlugInConfig != null)
+            {
+                _itemPlugInConfig.Visible = _config?.QuicklinkEnabled ?? false;
+            }
+        }
     }
 
     public void OnLanguageChanged(object sender, EventArgs e)
     {
         if (_itemPlugInConfig != null)
         {
-            _itemPlugInConfig.Text = Language.GetString("box", LangKey.Configure);
+            _itemPlugInConfig.Text = PluginUtils.GetQuicklinkText("Box");
         }
     }
 
@@ -117,6 +149,10 @@ public class BoxPlugin : IGreenshotPlugin
     {
         LOG.Debug("Box Plugin shutdown.");
         Language.LanguageChanged -= OnLanguageChanged;
+        if (_config is INotifyPropertyChanged notify)
+        {
+            notify.PropertyChanged -= OnConfigPropertyChanged;
+        }
     }
 
     /// <summary>
@@ -124,21 +160,18 @@ public class BoxPlugin : IGreenshotPlugin
     /// </summary>
     public void Configure()
     {
-        ShowConfigDialog();
+        var mainForm = SimpleServiceProvider.Current.GetInstance<IGreenshotMainForm>(isOptional: true);
+        mainForm?.ShowSetting(Name);
+    }
+
+    public System.Windows.UIElement CreateConfigurationControl()
+    {
+        return new Forms.BoxConfigurationControl(_config);
     }
 
     public void ConfigMenuClick(object sender, EventArgs eventArgs)
     {
-        ShowConfigDialog();
-    }
-
-    /// <summary>
-    /// Opens the Box settings dialog.
-    /// </summary>
-    /// <returns>true if OK was pressed; false if cancelled</returns>
-    private bool ShowConfigDialog()
-    {
-        return new SettingsForm().ShowDialog() == DialogResult.OK;
+        Configure();
     }
 
     /// <summary>

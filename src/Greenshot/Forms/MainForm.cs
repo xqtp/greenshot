@@ -33,6 +33,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
+using System.Windows.Interop;
 using System.Windows.Threading;
 using Dapplo.Ini;
 using Dapplo.Ini.Interfaces;
@@ -57,15 +58,18 @@ using Greenshot.Editor;
 using Greenshot.Editor.Destinations;
 using Greenshot.Editor.Drawing;
 using Greenshot.Editor.Forms;
+using Greenshot.Forms.Wpf;
 using Greenshot.Base.Pipeline;
 using Greenshot.Base.Recipes;
 using Greenshot.Base.Triggers;
 using Greenshot.Helpers;
+using Greenshot.Helpers.Ipc;
 using Greenshot.Pipeline;
 using Greenshot.Plugin.Win10;
 using Greenshot.Processors;
 using Greenshot.Recipes;
 using Greenshot.Triggers;
+using Greenshot.UI;
 using log4net;
 
 using Timer = System.Timers.Timer;
@@ -79,7 +83,7 @@ namespace Greenshot.Forms
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainForm));
         private static ResourceMutex _applicationMutex;
-        private static ICoreConfiguration _conf = IniConfigRegistry.GetSection<ICoreConfiguration>();
+        private static ICoreConfiguration _conf => IniConfigHelper.EnsureSection<ICoreConfiguration>(() => new CoreConfigurationImpl());
 
         /// <summary>
         /// Application entry-point, called from <see cref="GreenshotMain"/> after the
@@ -101,9 +105,9 @@ namespace Greenshot.Forms
                     // un-register application on uninstall (allow uninstall)
                     try
                     {
-                        Log.Info("Sending all instances the exit command.");
+                        Log.Info("Sending running instance the exit command via named pipe.");
                         // Pass Exit to running instance, if any
-                        SendData(new CopyDataTransport(CommandEnum.Exit));
+                        NamedPipeClient.SendMessage(IpcEnvelope.CreateExit());
                     }
                     catch (Exception e)
                     {
@@ -117,9 +121,9 @@ namespace Greenshot.Forms
                 if (options.Reload)
                 {
                     // Modify configuration
-                    Log.Info("Reloading configuration!");
+                    Log.Info("Reloading configuration via named pipe!");
                     // Update running instances
-                    SendData(new CopyDataTransport(CommandEnum.ReloadConfig));
+                    NamedPipeClient.SendMessage(IpcEnvelope.CreateReloadConfig());
                     FreeMutex();
                     return;
                 }
@@ -131,31 +135,20 @@ namespace Greenshot.Forms
                     return;
                 }
 
-                if (options.Language != null)
-                {
-                    _conf.Language = options.Language;
-                }
-
                 if (isAlreadyRunning)
                 {
                     var filesToOpen = new List<string>(options.Files);
                     // Finished parsing the command line arguments, see if we need to do anything
-                    CopyDataTransport transport = new CopyDataTransport();
                     if (filesToOpen.Count > 0)
                     {
                         foreach (string fileToOpen in filesToOpen)
                         {
-                            transport.AddCommand(CommandEnum.OpenFile, fileToOpen);
+                            NamedPipeClient.SendMessage(IpcEnvelope.CreateOpenFile(fileToOpen));
                         }
-                    }
-                    // We didn't initialize the language yet, do it here just for the message box
-                    if (transport.Commands.Count > 0)
-                    {
-                        SendData(transport);
                     }
                     else
                     {
-                        StringBuilder instanceInfo = new StringBuilder();
+                        var instances = new List<RunningInstanceItem>();
                         bool matchedThisProcess = false;
                         int index = 1;
                         int currentProcessId;
@@ -168,7 +161,13 @@ namespace Greenshot.Forms
                         {
                             try
                             {
-                                instanceInfo.Append(index++ + ": ").AppendLine(Kernel32Api.GetProcessPath(greenshotProcess.Id));
+                                string path = Kernel32Api.GetProcessPath(greenshotProcess.Id);
+                                instances.Add(new RunningInstanceItem
+                                {
+                                    Index = index++,
+                                    ProcessId = greenshotProcess.Id,
+                                    Path = path
+                                });
                                 if (currentProcessId == greenshotProcess.Id)
                                 {
                                     matchedThisProcess = true;
@@ -185,21 +184,16 @@ namespace Greenshot.Forms
                         if (!matchedThisProcess)
                         {
                             using Process currentProcess = Process.GetCurrentProcess();
-                            instanceInfo.Append(index + ": ").AppendLine(Kernel32Api.GetProcessPath(currentProcess.Id));
+                            instances.Add(new RunningInstanceItem
+                            {
+                                Index = index,
+                                ProcessId = currentProcess.Id,
+                                Path = Kernel32Api.GetProcessPath(currentProcess.Id)
+                            });
                         }
 
-                        // A dirty fix to make sure the message box is visible as a Greenshot window on the taskbar
-                        using Form dummyForm = new Form
-                        {
-                            Icon = GreenshotResources.GetGreenshotIcon(),
-                            ShowInTaskbar = true,
-                            FormBorderStyle = FormBorderStyle.None,
-                            Location = new Point(int.MinValue, int.MinValue)
-                        };
-                        dummyForm.Load += delegate { dummyForm.Size = Size.Empty; };
-                        dummyForm.Show();
-                        MessageBox.Show(dummyForm, Language.GetString(LangKey.error_multipleinstances) + "\r\n" + instanceInfo, Language.GetString(LangKey.error),
-                            MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        var instanceWindow = new InstanceRunningWindow(instances);
+                        instanceWindow.ShowDialog();
                     }
 
                     FreeMutex();
@@ -237,18 +231,6 @@ namespace Greenshot.Forms
         }
 
 
-        /// <summary>
-        /// Send DataTransport Object via Window-messages
-        /// </summary>
-        /// <param name="dataTransport">DataTransport with data for a running instance</param>
-        private static void SendData(CopyDataTransport dataTransport)
-        {
-            string appName = Application.ProductName;
-            CopyData copyData = new CopyData();
-            copyData.Channels.Add(appName);
-            copyData.Channels[appName].Send(dataTransport);
-        }
-
         private static void FreeMutex()
         {
             // Remove the application mutex
@@ -267,21 +249,20 @@ namespace Greenshot.Forms
             }
         }
 
-        private static MainForm _instance;
-
-        private readonly CopyData _copyData;
+        private readonly NamedPipeServer _namedPipeServer;
 
         // Thumbnail preview
         private ThumbnailForm _thumbnailForm;
 
-        // Make sure we have only one settings form
-        private SettingsForm _settingsForm;
+        // Make sure we have only one settings window
+        private SettingsWindow _settingsWindow;
 
-        // Make sure we have only one about form
-        private AboutForm _aboutForm;
+        // Make sure we have only one about window
+        private AboutWindow _aboutWindow;
 
         // Timer for the double click test
         private readonly Timer _doubleClickTimer = new Timer();
+        private UpdateService _updateService;
 
         public MainForm(CommandLineOptions options)
         {
@@ -301,6 +282,7 @@ namespace Greenshot.Forms
             SimpleServiceProvider.Current.AddService<ICaptureHelper>(this);
             SimpleServiceProvider.Current.AddService<ITriggerManager>(TriggerManager.Instance);
             SimpleServiceProvider.Current.AddService<IRecipeManager>(RecipeManager.Instance);
+            SimpleServiceProvider.Current.AddService<IStepRegistry>(StepRegistry.Instance);
             SimpleServiceProvider.Current.AddService<ICapturePipeline>(CapturePipeline.Instance);
 
             // Windows specific services
@@ -361,12 +343,23 @@ namespace Greenshot.Forms
                 }
             };
 
+            // Apply the command line language after LoadPlugins, as it reloads the configuration from disk
+            if (options.Language != null)
+            {
+                _conf.Language = options.Language;
+            }
+
             // if language is not set, show language dialog
             if (string.IsNullOrEmpty(_conf.Language))
             {
-                LanguageDialog languageDialog = LanguageDialog.GetInstance();
-                languageDialog.ShowDialog();
-                _conf.Language = languageDialog.SelectedLanguage;
+                var languageWindow = new Greenshot.Forms.Wpf.LanguageWindow();
+                languageWindow.ShowDialog(this);
+                _conf.Language = languageWindow.SelectedLanguage;
+                Language.CurrentLanguage = languageWindow.SelectedLanguage;
+            }
+            else if (Language.CurrentLanguage != _conf.Language)
+            {
+                Language.CurrentLanguage = _conf.Language;
             }
 
             // Disable access to the settings, for feature #3521446
@@ -423,15 +416,10 @@ namespace Greenshot.Forms
             // Make sure we never capture the mainform
             WindowDetails.RegisterIgnoreHandle(SharedMessageWindow.Handle);
 
-            // Create a new instance of the class: copyData = new CopyData();
-            _copyData = new CopyData();
-
-            // Assign the handle:
-            _copyData.AssignHandle(SharedMessageWindow.Handle);
-            // Create the channel to send on:
-            _copyData.Channels.Add("Greenshot");
-            // Hook up received event:
-            _copyData.CopyDataReceived += CopyDataDataReceived;
+            // Start named pipe server for session-isolated IPC
+            _namedPipeServer = new NamedPipeServer();
+            _namedPipeServer.MessageReceived += OnNamedPipeMessageReceived;
+            _namedPipeServer.Start();
 
             if (options.Restore)
             {
@@ -450,9 +438,9 @@ namespace Greenshot.Forms
             }
 
             // Start the update check in the background
-            var updateService = new UpdateService();
-            updateService.Startup();
-            SimpleServiceProvider.Current.AddService(updateService);
+            _updateService = new UpdateService();
+            _updateService.Startup();
+            SimpleServiceProvider.Current.AddService(_updateService);
 
             // Make Greenshot use less memory after startup
             if (_conf.MinimizeWorkingSetSize)
@@ -480,7 +468,7 @@ namespace Greenshot.Forms
             contextmenu_donate.Text = Language.GetString("contextmenu_donate");
             contextmenu_about.Text = Language.GetString("contextmenu_about");
             contextmenu_exit.Text = Language.GetString("contextmenu_exit");
-            notifyIcon.Text = Language.GetString("application_title");
+            notifyIcon.Text = NotifyIconTextHelper.ToNotifyIconText(Language.GetString("application_title"));
         }
 
         /// <summary>
@@ -556,41 +544,70 @@ namespace Greenshot.Forms
         }
 
         /// <summary>
-        /// DataReceivedEventHandler
+        /// Handles IPC envelopes received via the session-isolated named pipe.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="copyDataReceivedEventArgs"></param>
-        private void CopyDataDataReceived(object sender, CopyDataReceivedEventArgs copyDataReceivedEventArgs)
+        private void OnNamedPipeMessageReceived(object sender, IpcEnvelope envelope)
         {
-            // Cast the data to the type of object we sent:
-            var dataTransport = (CopyDataTransport) copyDataReceivedEventArgs.Data;
-            HandleDataTransport(dataTransport);
-        }
-
-        private void HandleDataTransport(CopyDataTransport dataTransport)
-        {
-            foreach (KeyValuePair<CommandEnum, string> command in dataTransport.Commands)
+            if (InvokeRequired)
             {
-                Log.Debug("Data received, Command = " + command.Key + ", Data: " + command.Value);
-                switch (command.Key)
-                {
-                    case CommandEnum.Exit:
-                        Log.Info("Exit requested");
-                        Exit();
-                        break;
-                    case CommandEnum.FirstLaunch:
-                        ApplicationStartupHelper.FirstLaunch();
-                        break;
-                    case CommandEnum.ReloadConfig:
-                        ApplicationStartupHelper.ReloadConfig();
-                        break;
-                    case CommandEnum.OpenFile:
-                        ApplicationStartupHelper.OpenFile(command.Value);
-                        break;
-                    default:
-                        Log.Error("Unknown command!");
-                        break;
-                }
+                BeginInvoke(new Action(() => OnNamedPipeMessageReceived(sender, envelope)));
+                return;
+            }
+
+            if (envelope?.Parsed == null)
+            {
+                Log.Warn("Received empty or unparseable IPC message.");
+                return;
+            }
+
+            Log.Info($"Named pipe message received: action='{envelope.Parsed.Action}', source='{envelope.Source}'");
+
+            switch (envelope.Parsed.Action?.ToLowerInvariant())
+            {
+                case "open_file":
+                case "open":
+                    string filePath = null;
+                    if (envelope.Parsed.Parameters != null)
+                    {
+                        if (!envelope.Parsed.Parameters.TryGetValue("path", out filePath))
+                        {
+                            envelope.Parsed.Parameters.TryGetValue("file", out filePath);
+                        }
+                    }
+                    if (string.IsNullOrEmpty(filePath))
+                    {
+                        filePath = envelope.RawInput;
+                    }
+
+                    if (!string.IsNullOrEmpty(filePath))
+                    {
+                        ApplicationStartupHelper.OpenFile(filePath);
+                    }
+                    else
+                    {
+                        Log.Warn("OpenFile command received over named pipe without a valid file path.");
+                    }
+                    break;
+
+                case "exit":
+                    Log.Info("Exit requested via named pipe.");
+                    Exit();
+                    break;
+
+                case "reload_config":
+                case "reload":
+                    Log.Info("ReloadConfig requested via named pipe.");
+                    ApplicationStartupHelper.ReloadConfig();
+                    break;
+
+                case "first_launch":
+                    Log.Info("FirstLaunch requested via named pipe.");
+                    ApplicationStartupHelper.FirstLaunch();
+                    break;
+
+                default:
+                    Log.Warn($"Unknown command action received over named pipe: '{envelope.Parsed.Action}'");
+                    break;
             }
         }
 
@@ -700,13 +717,14 @@ namespace Greenshot.Forms
             }
 
             UpdateRecipesMenu();
+            PluginUtils.UpdatePluginSeparatorsVisibility(contextMenu);
         }
 
         private ToolStripMenuItem _recipesMenuItem;
 
         private void UpdateRecipesMenu()
         {
-            if (!coreConfiguration.IsBetaTester)
+            if (!RecipeConfigHelper.IsRecipeFeatureEnabled())
             {
                 if (_recipesMenuItem != null && contextMenu.Items.Contains(_recipesMenuItem))
                 {
@@ -743,7 +761,7 @@ namespace Greenshot.Forms
             foreach (var trigger in menuTriggers.OrderBy(t => t.Order))
             {
                 var recipe = recipeManager.GetRecipeById(trigger.TargetRecipeId);
-                if (recipe == null || !recipe.ShowInContextMenu) continue;
+                if (recipe == null || !recipe.ShowInContextMenu || !recipe.IsEnabled) continue;
 
                 var item = new ToolStripMenuItem(trigger.MenuItemText ?? recipe.Name);
 
@@ -757,10 +775,7 @@ namespace Greenshot.Forms
                 {
                     Dispatcher.CurrentDispatcher.BeginInvoke(() =>
                     {
-                        _ = CapturePipeline.Instance.ExecuteAsync(recipe, trigger, null).ContinueWith(task =>
-                        {
-                            Log.Error("Recipe capture pipeline failed.", task.Exception);
-                        }, TaskContinuationOptions.OnlyOnFaulted);
+                        trigger.Fire();
                     });
                 };
 
@@ -786,6 +801,37 @@ namespace Greenshot.Forms
                 recipeManager.ReloadRecipes();
             };
             _recipesMenuItem.DropDownItems.Add(reloadItem);
+
+            var editorService = SimpleServiceProvider.Current.GetInstance<IRecipeEditorService>(isOptional: true);
+            if (editorService != null)
+            {
+                var managerItem = new ToolStripMenuItem(Language.GetString("contextmenu_managerecipes") ?? "Recipe Manager...");
+                managerItem.Click += (s, ev) =>
+                {
+                    editorService.OpenRecipeManager();
+                };
+                _recipesMenuItem.DropDownItems.Add(managerItem);
+
+                var editorItem = new ToolStripMenuItem(Language.GetString("contextmenu_recipeeditor") ?? "Recipe Editor...");
+                editorItem.Click += (s, ev) =>
+                {
+                    OnOpenRecipeEditorClicked();
+                };
+                _recipesMenuItem.DropDownItems.Add(editorItem);
+            }
+        }
+
+        private void OnOpenRecipeEditorClicked()
+        {
+            try
+            {
+                var editorService = SimpleServiceProvider.Current.GetInstance<IRecipeEditorService>(isOptional: true);
+                editorService?.OpenEditor();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to open recipe editor window.", ex);
+            }
         }
 
         private void OnImportRecipeClicked()
@@ -801,14 +847,10 @@ namespace Greenshot.Forms
                 {
                     string recipePath = Path.GetFullPath(ofd.FileName);
                     var result = Recipes.RecipeManager.Instance.LoadRecipeFromFile(recipePath, interactiveApproval: true, forceApprovalPrompt: true);
-                    if (!result.IsValid)
+                    if (result.IsValid)
                     {
-                        MessageBox.Show(this, $"{Language.GetString("recipe_import_failed") ?? "Failed to load recipe:"}\n{string.Join("\n", result.Errors)}",
-                            Language.GetString("recipe_import") ?? "Recipe Import", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-                    else
-                    {
-                        string existing = coreConfiguration.RecipeFiles ?? "";
+                        var recipeConfig = IniConfigRegistry.GetSection<IRecipeConfiguration>();
+                        string existing = recipeConfig?.RecipeFiles ?? "";
                         var configuredPaths = new List<string>();
                         var currentPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         foreach (string configuredPath in existing.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
@@ -830,7 +872,10 @@ namespace Greenshot.Forms
                         if (currentPaths.Add(recipePath))
                         {
                             configuredPaths.Add(recipePath);
-                            coreConfiguration.RecipeFiles = string.Join(";", configuredPaths);
+                            if (recipeConfig != null)
+                            {
+                                recipeConfig.RecipeFiles = string.Join(";", configuredPaths);
+                            }
                             IniConfigRegistry.Get()?.Save();
                         }
                     }
@@ -1095,27 +1140,32 @@ namespace Greenshot.Forms
         /// <summary>
         /// This is called indirectly from the context menu "Preferences"
         /// </summary>
-        public void ShowSetting()
+        public void ShowSetting(string pluginName = null)
         {
-            if (_settingsForm != null)
+            // Use WPF Settings Window
+            if (_settingsWindow != null && _settingsWindow.IsVisible)
             {
-                WindowDetails.ToForeground(_settingsForm.Handle);
+                if (!string.IsNullOrEmpty(pluginName))
+                {
+                    _settingsWindow.SelectPlugin(pluginName);
+                }
+                _settingsWindow.Activate();
             }
             else
             {
                 try
                 {
-                    using (_settingsForm = new SettingsForm())
+                    _settingsWindow = new SettingsWindow(pluginName);
+                    
+                    // Show the WPF window as a dialog
+                    if (_settingsWindow.ShowDialog() == true)
                     {
-                        if (_settingsForm.ShowDialog() == DialogResult.OK)
-                        {
-                            InitializeQuickSettingsMenu();
-                        }
+                        InitializeQuickSettingsMenu();
                     }
                 }
                 finally
                 {
-                    _settingsForm = null;
+                    _settingsWindow = null;
                 }
             }
         }
@@ -1132,22 +1182,25 @@ namespace Greenshot.Forms
 
         public void ShowAbout()
         {
-            if (_aboutForm != null)
+            if (_aboutWindow != null && _aboutWindow.IsLoaded)
             {
-                WindowDetails.ToForeground(_aboutForm.Handle);
+                _aboutWindow.Activate();
+                WindowDetails.ToForeground(new System.Windows.Interop.WindowInteropHelper(_aboutWindow).Handle);
             }
             else
             {
                 try
                 {
-                    using (_aboutForm = new AboutForm())
+                    _aboutWindow = new AboutWindow();
+                    var helper = new System.Windows.Interop.WindowInteropHelper(_aboutWindow)
                     {
-                        _aboutForm.ShowDialog(this);
-                    }
+                        Owner = this.Handle
+                    };
+                    _aboutWindow.ShowDialog();
                 }
                 finally
                 {
-                    _aboutForm = null;
+                    _aboutWindow = null;
                 }
             }
         }

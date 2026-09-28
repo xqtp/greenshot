@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Greenshot - a free and open source screenshot tool
  * Copyright (C) 2007-2026 Thomas Braun, Jens Klingen, Robin Krom
  *
@@ -489,6 +489,11 @@ namespace Greenshot.Editor.Drawing
             {
                 element.AdjustToDpi(dpi);
             }
+
+            // The framework's automatic DPI-driven control scaling resizes this control along with
+            // every other control on the form, which is wrong here: the canvas size must always be
+            // exactly image-size * zoom-factor, in device pixels, regardless of monitor DPI.
+            UpdateSize();
         }
 
         /// <summary>
@@ -777,6 +782,38 @@ namespace Greenshot.Editor.Drawing
             {
                 LOG.Error("Error serializing elements from stream.", e);
             }
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the surface, cloning its background image, elements, and capture details.
+        /// </summary>
+        public ISurface Clone()
+        {
+            var clonedImage = _image != null ? ImageHelper.Clone(_image) : null;
+            var clonedSurface = new Surface(clonedImage)
+            {
+                CounterStart = CounterStart,
+                CaptureDetails = (CaptureDetails as CaptureDetails)?.Clone() ?? CaptureDetails,
+                Modified = Modified,
+                ZoomFactor = ZoomFactor,
+                LastSaveFullPath = LastSaveFullPath,
+                UploadUrl = UploadUrl
+            };
+
+            if (_elements != null && _elements.Count > 0)
+            {
+                using var ms = RecyclableMemoryStreamFactory.GetStream("Surface.Clone");
+                SaveElementsToStream(ms);
+                ms.Position = 0;
+                clonedSurface.LoadElementsFromStream(ms);
+
+                /* TODO: LoadElementsFromStream() selects all Elements, we don't want that in the clone.
+                * It should be changed there but that would be a breaking change, e.g. for copy/paste.
+                */
+                clonedSurface.DeselectAllElements(); 
+            }
+
+            return clonedSurface;
         }
 
         /// <summary>
