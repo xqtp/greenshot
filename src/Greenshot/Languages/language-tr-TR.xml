@@ -245,6 +245,7 @@ Seçilen depolama konumunun yazma izinlerini kontrol edin.</resource>
 		<resource name="settings_checkperiod">Güncelleme kontrol aralığı (gün cinsinden, 0=kontrol yok)</resource>
 		<resource name="settings_configureplugin">Yapılandır</resource>
 		<resource name="settings_copypathtoclipboard">Her görüntü kaydedildiğinde dosya yolunu panoya kopyala</resource>
+        <resource name="settings_postsavebehavior">Kaydetme sonrası davranış</resource>
 		<resource name="settings_destination">Hedef</resource>
 		<resource name="settings_destination_clipboard">Panoya kopyala</resource>
 		<resource name="settings_destination_editor">Editörde aç</resource>
@@ -322,6 +323,9 @@ Greenshot özellikleri, kısayol tuşları olmadan sistem tepsisi menüsünden k
 		<resource name="WindowCaptureMode.Auto">Otomatik</resource>
 		<resource name="WindowCaptureMode.GDI">Varsayılan rengi kullan</resource>
 		<resource name="WindowCaptureMode.Screen">Göründüğü gibi</resource>
+        <resource name="PostSaveBehavior.None">Hiçbiri</resource>
+        <resource name="PostSaveBehavior.CopyImageToClipboard">Görüntüyü panoya kopyala</resource>
+        <resource name="PostSaveBehavior.CopyFilePathToClipboard">Dosya yolunu panoya kopyala</resource>
                 
     <!-- 1.2 -->
     <resource name="editor_dropshadow_darkness">Koyuluk</resource>
