@@ -207,7 +207,7 @@ Seçilen depolama konumunun yazma izinlerini kontrol edin.</resource>
 		<resource name="expertsettings_optimizeforrdp">Uzak masaüstü ile kullanım için bazı iyileştirmeler yap</resource>
         <resource name="expertsettings_reuseeditorifpossible">Mümkünse editörü yeniden kullan</resource>
 		<resource name="expertsettings_suppresssavedialogatclose">Editörü kapatırken kaydetmeyi sorma</resource>
-		<resource name="expertsettings_thumbnailpreview">İçerik menüsünde küçük resimleri göster (Vista ve windows 7 için)</resource>
+		<resource name="expertsettings_thumbnailpreview">Bağlam menüsünde küçük resimleri göster (Vista ve windows 7 için)</resource>
 		<resource name="exported_to">{0} konumuna aktarıldı</resource>
         <resource name="exported_to_error">{0} konumuna aktarırken bir hata oluştu:</resource>
 		<resource name="help_title">Greenshot Yardımı</resource>
