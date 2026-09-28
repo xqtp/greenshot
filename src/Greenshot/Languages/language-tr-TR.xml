@@ -20,7 +20,9 @@ Kısa bir özet ekleyin ve sorunu yeniden oluşturmak için faydalı bilgileri p
 Benzer bir hatanın daha önce bildirilip bildirilmediğini kontrol ederseniz çok seviniriz. (Arama özelliğini kullanarak bunu hızlıca yapabilirsiniz.) Teşekkürler!</resource>
 		<resource name="bugreport_title">Hata</resource>
 		<resource name="CANCEL">İptal</resource>
+        <resource name="quicklink_enable">Bağlam menüsüne yapılandırma kısayolu ekle</resource>
         <resource name="zxing_scan_on_capture">Bölge yakalamada karekod taramasını etkinleştir</resource>
+        <resource name="zxing_contextmenu_configure">Karekodu yapılandır</resource>
 		<resource name="clipboard_error">Panoya yazılırken beklenmedik bir hata oluştu.</resource>
 		<resource name="clipboard_inuse">{0} işlemi erişimi engellediğinden Greenshot panoya yazamadı.</resource>
         <resource name="clipboard_noimage">Pano görüntüsü bulunamadı.</resource>
@@ -351,5 +353,6 @@ Greenshot özellikleri, kısayol tuşları olmadan sistem tepsisi menüsünden k
   <resource name="editor_fit">Esnet</resource>
   <resource name="editor_pushout">Yakalamayı genişlet ve dışarı taşı</resource>
   <resource name="editor_snap">Kenara tuttur</resource>
+      <resource name="contextmenu_configure_plugin">{0} eklentisini yapılandır</resource>
   </resources>
 </language>
