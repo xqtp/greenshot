@@ -28,11 +28,21 @@
     <resource name="label_argument">
       Parametreler
     </resource>
+    <resource name="label_outputimageformat">Görüntü biçimi</resource>
     <resource name="label_information">
       {0}, ekran görüntünüzün dosya adıdır
     </resource>
     <resource name="tooltip_duplicate_name">
-      Bu adda bir komut zaten mevcut. Lütfen farklı bir ad seçin.
+      Bu komut adı zaten mevcut. Farklı bir ad seçin.
     </resource>
-  </resources>
-</language>
+      <resource name="settings_general_title">Genel ayarlar</resource>
+      <resource name="label_run_in_background">Arka planda çalıştır</resource>
+      <resource name="label_redirect_standard_error">Standart hatayı Greenshot günlüğüne yönlendir (uyarı olarak)</resource>
+      <resource name="label_redirect_standard_output">Standart çıktıyı yönlendir</resource>
+      <resource name="label_show_output_in_log">Standart çıktıyı Greenshot günlüğünde göster</resource>
+      <resource name="label_parse_output_for_uri">Çıktıdaki URI'yi ayrıştır ve bildirime tıklandığında aç</resource>
+      <resource name="label_output_to_clipboard">Standart çıktıyı panoya kopyala</resource>
+      <resource name="label_uri_to_clipboard">Bulunan URI'yi panoya kopyala</resource>
+      <resource name="settings_instructions">Ayrıntıları düzenlemek için bir komut seçin veya yeni bir komut eklemek için Yeni'ye tıklayın.</resource>
+    </resources>
+  </language>
