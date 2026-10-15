@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Greenshot - a free and open source screenshot tool
  * Copyright (C) 2007-2026 Thomas Braun, Jens Klingen, Robin Krom
  *
@@ -24,7 +24,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Greenshot.Base.Core;
-using Greenshot.Base.Core.Enums;
 using Greenshot.Base.Core.Export;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Plugin;
@@ -33,7 +32,7 @@ using Greenshot.Base.Core.FileFormat;
 namespace Greenshot.Destinations
 {
     /// <summary>
-    /// What to share with the Windows share dialog, the view (SharingForm) returns the name of the app, null when nothing was shared.
+    /// What to share with the Windows share dialog, the view (ShareHostWindow) returns the name of the app, null when nothing was shared.
     /// </summary>
     public sealed class ShareRequest : IDialogViewModel<string>
     {

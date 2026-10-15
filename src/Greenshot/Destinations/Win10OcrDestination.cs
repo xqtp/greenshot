@@ -24,12 +24,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Greenshot.Base.Core;
-using Greenshot.Base.Core.Enums;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Ocr;
 using Greenshot.Base.Interfaces.Plugin;
 using Greenshot.Base.Threading;
-using Windows.Media.Ocr;
 using Greenshot.Base.Core.FileFormat;
 
 namespace Greenshot.Destinations
@@ -48,18 +46,6 @@ namespace Greenshot.Destinations
         /// </summary>
         public override DestinationDescriptor Descriptor { get; } =
             new DestinationDescriptor("Windows OCR", 3, DestinationIcons.Exe(FilenameHelper.FillCmdVariables(@"%windir%\system32\imageres.dll"), 97));
-
-        /// <summary>
-        /// Constructor, this is only debug information
-        /// </summary>
-        public Win10OcrDestination()
-        {
-            var languages = OcrEngine.AvailableRecognizerLanguages;
-            foreach (var language in languages)
-            {
-                Log.DebugFormat("Found language {0} {1}", language.NativeName, language.LanguageTag);
-            }
-        }
 
         /// <summary>
         /// Run the Windows OCR engine to process the text on the captured image

@@ -26,11 +26,11 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
-using Dapplo.Ini;
 using Greenshot.Base.Core;
 using log4net;
 using Greenshot.Base.Threading;
 using Greenshot.Base.Languages;
+using Greenshot.Base.Wpf;
 
 namespace Greenshot.Base.Controls
 {
@@ -167,6 +167,24 @@ namespace Greenshot.Base.Controls
         }
 
         /// <summary>
+        /// The title bar has the colors of Greenshot's theme (dark when the theme is dark) and follows theme changes
+        /// </summary>
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            if (!DesignMode)
+            {
+                WindowFrameTheme.Attach(Handle);
+            }
+        }
+
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            WindowFrameTheme.Detach(Handle);
+            base.OnHandleDestroyed(e);
+        }
+
+        /// <summary>
         /// Make sure the form is visible, if this is wanted
         /// </summary>
         /// <param name="e">EventArgs</param>
@@ -175,7 +193,7 @@ namespace Greenshot.Base.Controls
             base.OnShown(e);
             if (ToFront)
             {
-                WindowDetails.ToForeground(Handle);
+                WindowHelper.ToForeground(Handle);
             }
         }
 

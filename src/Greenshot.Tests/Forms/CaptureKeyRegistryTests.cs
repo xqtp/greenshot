@@ -24,8 +24,8 @@ using System;
 using System.Linq;
 using System.Windows.Input;
 using Greenshot.Base.Interfaces.Capture;
-using Greenshot.UI.Capture;
-using Greenshot.UI.Capture.Tools;
+using Greenshot.Capturing;
+using Greenshot.Capturing.Overlays;
 using Xunit;
 
 namespace Greenshot.Tests.Forms;
@@ -105,6 +105,20 @@ public class CaptureKeyRegistryTests
         Assert.Same(regionEnter, registry.Find(Key.Return, ModifierKeys.None, region));
         Assert.Same(windowEnter, registry.Find(Key.Return, ModifierKeys.None, window));
         Assert.Null(registry.Find(Key.Return, ModifierKeys.None, new FakeTool()));
+    }
+
+    [Fact]
+    public void KeyForSomeTools_OnlyWorksAndShowsForThem()
+    {
+        var registry = new CaptureKeyRegistry();
+        var region = new FakeTool();
+        var window = new FakeTool();
+        var zoomer = registry.Register(new CaptureKeyBinding(Window, null, Key.Z, ModifierKeys.None, () => "zoomer", () => { }, tool => tool == region));
+
+        Assert.Same(zoomer, registry.Find(Key.Z, ModifierKeys.None, region));
+        Assert.Null(registry.Find(Key.Z, ModifierKeys.None, window));
+        Assert.True(zoomer.IsActiveFor(region));
+        Assert.False(zoomer.IsActiveFor(window));
     }
 
     [Fact]

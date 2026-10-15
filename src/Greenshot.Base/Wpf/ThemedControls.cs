@@ -23,7 +23,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace Greenshot.Base.Wpf
 {
@@ -45,6 +44,8 @@ namespace Greenshot.Base.Wpf
             window.Background = WpfThemeHelper.CardBackground;
             window.BorderBrush = WpfThemeHelper.CardBorder;
             window.BorderThickness = new Thickness(1);
+            // Windows 11 rounds windows with a title bar by itself, this one has none
+            window.SourceInitialized += (s, e) => WindowFrameTheme.SetRoundedCorners(window);
         }
 
         /// <summary>
@@ -79,7 +80,7 @@ namespace Greenshot.Base.Wpf
                 Margin = new Thickness(8, 0, 0, 0),
                 IsDefault = isDefault,
                 IsCancel = isCancel,
-                Foreground = isDefault ? Brushes.White : WpfThemeHelper.TextPrimary,
+                Foreground = isDefault ? palette.AccentForegroundBrush : WpfThemeHelper.TextPrimary,
                 Background = isDefault ? WpfThemeHelper.Accent : palette.ButtonBackgroundBrush,
                 BorderBrush = isDefault ? WpfThemeHelper.Accent : WpfThemeHelper.CardBorder,
                 BorderThickness = new Thickness(1),

@@ -8,12 +8,12 @@ using System.Windows;
 using System.Windows.Input;
 using Greenshot.Base.Core;
 using Greenshot.Base.Core.FileFormat;
-using Greenshot.Base.Interfaces;
-using Greenshot.Base.Pipeline;
 using Greenshot.Base.Recipes;
-using Greenshot.Base.Triggers;
+using Greenshot.Base.Recipes.Pipeline;
+using Greenshot.Base.Recipes.Triggers;
 using Greenshot.Base.Wpf;
 using Greenshot.Plugin.RecipeEditor.Layout;
+using Greenshot.Plugin.RecipeEditor.Views;
 using log4net;
 using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
@@ -194,7 +194,6 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
                 {
                     AddCurrentFormatOption(value?.OutputFileFormat);
                     AddCurrentFormatOption(value?.ExternalCommandFormat);
-                    AddCurrentFormatOption(value?.ImgurFormat);
                     AddCurrentFormatOption(value?.JiraFormat);
                     AddCurrentFormatOption(value?.ConfluenceFormat);
                     foreach (var n in Nodes) n.IsSelected = (n == value);
@@ -1753,7 +1752,7 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
                 },
                 OpenExtension);
 
-            var dlg = new Dialogs.RecipeManagerDialog(vm)
+            var dlg = new RecipeManagerWindow(vm)
             {
                 Owner = Application.Current?.Windows.OfType<RecipeEditorWindow>().FirstOrDefault()
             };
@@ -2407,7 +2406,7 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
                     dict["ShowPrintDialog"] = true;
                     break;
                 case WellKnownStepTypes.CustomDestination:
-                    dict["CustomDestinationId"] = "Imgur";
+                    dict["CustomDestinationId"] = "Clipboard";
                     break;
                 case WellKnownStepTypes.Notification:
                     dict["ShowNotification"] = true;
@@ -2453,10 +2452,6 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
                     dict["UriToClipboard"] = false;
                     dict["ReloadAfterExecution"] = false;
                     break;
-                case "Imgur":
-                    dict["Format"] = "png";
-                    dict["CopyLinkToClipboard"] = true;
-                    break;
                 case "Jira":
                     dict["IssueKey"] = "PROJECT-123";
                     dict["Format"] = "png";
@@ -2469,6 +2464,18 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
                     break;
                 case "Office":
                     dict["Application"] = "Word";
+                    break;
+                case "Pdf":
+                    dict["PageSize"] = "Image";
+                    dict["MeasurementUnit"] = "Mm";
+                    dict["PageWidthMm"] = 210.0;
+                    dict["PageHeightMm"] = 297.0;
+                    dict["MarginTopMm"] = 0.0;
+                    dict["MarginBottomMm"] = 0.0;
+                    dict["MarginLeftMm"] = 0.0;
+                    dict["MarginRightMm"] = 0.0;
+                    dict["ScalingMode"] = "OnlyShrinkToFit";
+                    dict["ShowSaveDialog"] = true;
                     break;
                 case "BarcodeScan":
                     dict["SetVariable"] = "barcode_text";

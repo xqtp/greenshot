@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Greenshot - a free and open source screenshot tool
  * Copyright (C) 2007-2026 Thomas Braun, Jens Klingen, Robin Krom
  *
@@ -26,7 +26,7 @@ using Greenshot.Base;
 using Greenshot.Base.Core;
 using Greenshot.Base.Core.Export;
 using Greenshot.Base.Interfaces;
-using Greenshot.Configuration;
+
 using Greenshot.Base.Languages;
 
 namespace Greenshot.Destinations
@@ -61,7 +61,7 @@ namespace Greenshot.Destinations
                 if (result.IsSucceeded)
                 {
                     // The caller applies the result (messages, surface state) for the picked destination
-                    return result.WithTarget(result.Target ?? picked.Descriptor.DisplayName);
+                    return result.WithTarget(result.Target ?? picked.Descriptor.DisplayName).WithExportedBy(result.ExportedBy ?? picked);
                 }
 
                 // Export cancelled or failed: show the problem, and the picker again

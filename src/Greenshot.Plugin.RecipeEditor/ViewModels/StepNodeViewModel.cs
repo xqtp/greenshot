@@ -2,19 +2,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using Greenshot.Base.Drawing;
 using Greenshot.Base.Interfaces.Drawing;
 using Greenshot.Base.Interfaces.Forms;
 using Greenshot.Base.Recipes;
 using Greenshot.Base.Wpf;
-using Greenshot.Plugin.RecipeEditor.Dialogs;
 using Greenshot.Plugin.RecipeEditor.Helpers;
+using Greenshot.Plugin.RecipeEditor.Views;
 using Newtonsoft.Json.Linq;
 
 namespace Greenshot.Plugin.RecipeEditor.ViewModels
@@ -1463,8 +1461,6 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
 
         public bool IsExternalCommand => IsStepType("ExternalCommand");
 
-        public bool IsImgur => IsStepType("Imgur");
-
         public bool IsJira => IsStepType("Jira");
 
         public bool IsConfluence => IsStepType("Confluence");
@@ -2077,8 +2073,8 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
         private static Window GetActiveWindow()
         {
             return Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
-                ?? Application.Current?.Windows.OfType<Window>().FirstOrDefault()
-                ?? Application.Current?.MainWindow;
+                // Not a hidden window (MainWindow is just the first WPF window which was created)
+                ?? Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsVisible);
         }
 
         private static MessageBoxResult ShowMessageBox(string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon)
@@ -2130,7 +2126,7 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
             else
             {
                 var owner = GetActiveWindow();
-                var dlg = new SelectEditorDialog(editors);
+                var dlg = new SelectEditorWindow(editors);
                 if (owner != null)
                 {
                     dlg.Owner = owner;
@@ -2166,7 +2162,7 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
             string recipeName = RecipeNameProvider?.Invoke() ?? DisplayName;
 
             var ownerWin = GetActiveWindow();
-            var importDlg = new ImportAnnotationsDialog(items, sourceTitle, recipeName, Annotations.Count > 0);
+            var importDlg = new ImportAnnotationsWindow(items, sourceTitle, recipeName, Annotations.Count > 0);
             if (ownerWin != null)
             {
                 importDlg.Owner = ownerWin;
@@ -2207,7 +2203,7 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
                     string recipeName = RecipeNameProvider?.Invoke() ?? DisplayName;
 
                     var ownerWin = GetActiveWindow();
-                    var importDlg = new ImportAnnotationsDialog(items, sourceTitle, recipeName, Annotations.Count > 0);
+                    var importDlg = new ImportAnnotationsWindow(items, sourceTitle, recipeName, Annotations.Count > 0);
                     if (ownerWin != null)
                     {
                         importDlg.Owner = ownerWin;
@@ -3394,19 +3390,6 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
             set { SetParamOrRemoveIfEmpty("SetExitCodeVariable", value); OnPropertyChanged(nameof(ExternalCommandSetExitCodeVariable)); }
         }
 
-        // --- 14. Imgur Step ---
-        public string ImgurFormat
-        {
-            get => GetParam("Format", "png");
-            set { SetParam("Format", value); OnPropertyChanged(nameof(ImgurFormat)); }
-        }
-
-        public bool ImgurCopyLinkToClipboard
-        {
-            get => GetParamBool("CopyLinkToClipboard", true);
-            set { SetParam("CopyLinkToClipboard", value); OnPropertyChanged(nameof(ImgurCopyLinkToClipboard)); }
-        }
-
         // --- 15. Jira Step ---
         public string JiraIssueKey
         {
@@ -3450,6 +3433,67 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
         {
             get => GetParam("Application", "Word");
             set { SetParam("Application", value); OnPropertyChanged(nameof(OfficeApplication)); OnPropertyChanged(nameof(Summary)); }
+        }
+
+        // --- PDF Step ---
+        public string PdfPageSize
+        {
+            get => GetParam("PageSize", "");
+            set { SetParamOrRemoveIfEmpty("PageSize", value); OnPropertyChanged(nameof(PdfPageSize)); }
+        }
+
+        public string PdfMeasurementUnit
+        {
+            get => GetParam("MeasurementUnit", "");
+            set { SetParamOrRemoveIfEmpty("MeasurementUnit", value); OnPropertyChanged(nameof(PdfMeasurementUnit)); }
+        }
+
+        public string PdfPageWidthMm
+        {
+            get => GetParam("PageWidthMm", "");
+            set { SetParamOrRemoveIfEmpty("PageWidthMm", value); OnPropertyChanged(nameof(PdfPageWidthMm)); }
+        }
+
+        public string PdfPageHeightMm
+        {
+            get => GetParam("PageHeightMm", "");
+            set { SetParamOrRemoveIfEmpty("PageHeightMm", value); OnPropertyChanged(nameof(PdfPageHeightMm)); }
+        }
+
+        public string PdfMarginTopMm
+        {
+            get => GetParam("MarginTopMm", "");
+            set { SetParamOrRemoveIfEmpty("MarginTopMm", value); OnPropertyChanged(nameof(PdfMarginTopMm)); }
+        }
+
+        public string PdfMarginBottomMm
+        {
+            get => GetParam("MarginBottomMm", "");
+            set { SetParamOrRemoveIfEmpty("MarginBottomMm", value); OnPropertyChanged(nameof(PdfMarginBottomMm)); }
+        }
+
+        public string PdfMarginLeftMm
+        {
+            get => GetParam("MarginLeftMm", "");
+            set { SetParamOrRemoveIfEmpty("MarginLeftMm", value); OnPropertyChanged(nameof(PdfMarginLeftMm)); }
+        }
+
+        public string PdfMarginRightMm
+        {
+            get => GetParam("MarginRightMm", "");
+            set { SetParamOrRemoveIfEmpty("MarginRightMm", value); OnPropertyChanged(nameof(PdfMarginRightMm)); }
+        }
+
+        public string PdfScalingMode
+        {
+            get => GetParam("ScalingMode", "");
+            set { SetParamOrRemoveIfEmpty("ScalingMode", value); OnPropertyChanged(nameof(PdfScalingMode)); }
+        }
+
+        public bool PdfShowSaveDialog
+        {
+            get => GetParamBool("ShowSaveDialog", true);
+            set { SetParam("ShowSaveDialog", value); OnPropertyChanged(nameof(PdfShowSaveDialog)); }
         }
 
         // --- 18. Zxing Step ---
@@ -3757,8 +3801,6 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
                         return $"Record Video: {recTarget} ({recFps} FPS, {recPreset})";
                     case var _ when IsExternalCommand:
                         return !string.IsNullOrWhiteSpace(ExternalCommandLine) ? $"Run: {System.IO.Path.GetFileName(ExternalCommandLine)} {ExternalCommandArguments}".Trim() : "Execute Command";
-                    case var _ when IsImgur:
-                        return "Upload to Imgur";
                     case var _ when IsJira:
                         return !string.IsNullOrWhiteSpace(JiraIssueKey) ? $"Attach to Jira: {JiraIssueKey}" : "Attach to Jira Issue";
                     case var _ when IsConfluence:
@@ -3791,7 +3833,6 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
             OnPropertyChanged(nameof(DisplayName));
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(IsExternalCommand));
-            OnPropertyChanged(nameof(IsImgur));
             OnPropertyChanged(nameof(IsJira));
             OnPropertyChanged(nameof(IsConfluence));
             OnPropertyChanged(nameof(IsOffice));
@@ -3842,6 +3883,16 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
             OnPropertyChanged(nameof(PrinterColorMode));
             OnPropertyChanged(nameof(PrinterPrintFooter));
             OnPropertyChanged(nameof(PrinterFooterPattern));
+            OnPropertyChanged(nameof(PdfPageSize));
+            OnPropertyChanged(nameof(PdfMeasurementUnit));
+            OnPropertyChanged(nameof(PdfPageWidthMm));
+            OnPropertyChanged(nameof(PdfPageHeightMm));
+            OnPropertyChanged(nameof(PdfMarginTopMm));
+            OnPropertyChanged(nameof(PdfMarginBottomMm));
+            OnPropertyChanged(nameof(PdfMarginLeftMm));
+            OnPropertyChanged(nameof(PdfMarginRightMm));
+            OnPropertyChanged(nameof(PdfScalingMode));
+            OnPropertyChanged(nameof(PdfShowSaveDialog));
             OnPropertyChanged(nameof(ExternalCommandLine));
             OnPropertyChanged(nameof(ExternalCommandArguments));
             OnPropertyChanged(nameof(ExternalCommandFormat));
@@ -3852,8 +3903,6 @@ namespace Greenshot.Plugin.RecipeEditor.ViewModels
             OnPropertyChanged(nameof(ExternalCommandWorkingDirectory));
             OnPropertyChanged(nameof(ExternalCommandSetOutputVariable));
             OnPropertyChanged(nameof(ExternalCommandSetExitCodeVariable));
-            OnPropertyChanged(nameof(ImgurFormat));
-            OnPropertyChanged(nameof(ImgurCopyLinkToClipboard));
             OnPropertyChanged(nameof(JiraIssueKey));
             OnPropertyChanged(nameof(JiraFormat));
             OnPropertyChanged(nameof(JiraJpegQuality));

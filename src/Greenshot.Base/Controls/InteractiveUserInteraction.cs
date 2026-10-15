@@ -30,6 +30,7 @@ using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Plugin;
 using Greenshot.Base.Threading;
 using Greenshot.Base.Wpf;
+using Greenshot.Base.Wpf.Views;
 using log4net;
 using Greenshot.Base.Languages;
 
@@ -88,6 +89,10 @@ namespace Greenshot.Base.Controls
             return ModalAsync(() =>
             {
                 var saveImageFileDialog = new SaveImageFileDialog(request?.CaptureDetails);
+                if (!string.IsNullOrWhiteSpace(request?.Format))
+                {
+                    saveImageFileDialog.Extension = request.Format;
+                }
                 return saveImageFileDialog.ShowDialog() ? saveImageFileDialog.FileNameWithExtension : null;
             }, cancellationToken);
         }
@@ -104,7 +109,7 @@ namespace Greenshot.Base.Controls
 
         public Task<IDestination> PickDestinationAsync(IReadOnlyList<IDestination> choices, ICaptureDetails captureDetails, CancellationToken cancellationToken)
         {
-            return ModalTaskAsync(() => DestinationMenuBuilder.ShowPickerAsync(choices, captureDetails, cancellationToken), cancellationToken);
+            return ModalTaskAsync(() => DestinationPicker.ShowAsync(choices, captureDetails, cancellationToken), cancellationToken);
         }
 
         public void Register<TViewModel, TResult>(Func<TViewModel, TResult> showDialog) where TViewModel : IDialogViewModel<TResult>
@@ -204,21 +209,7 @@ namespace Greenshot.Base.Controls
             }
 
             // Notifications are shown on the UI thread, but nobody waits for the user
-            return _ui.InvokeAsync(() =>
-            {
-                switch (notification.Kind)
-                {
-                    case NotificationKind.Error:
-                        notificationService.ShowErrorMessage(notification.Message, notification.Timeout, notification.OnClick);
-                        break;
-                    case NotificationKind.Warning:
-                        notificationService.ShowWarningMessage(notification.Message, notification.Timeout, notification.OnClick);
-                        break;
-                    default:
-                        notificationService.ShowInfoMessage(notification.Message, notification.Timeout, notification.OnClick);
-                        break;
-                }
-            });
+            return _ui.InvokeAsync(() => notificationService.ShowNotification(notification));
         }
 
         public Task<bool?> ConfirmAsync(string title, string message, bool isError, CancellationToken cancellationToken)

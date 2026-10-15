@@ -23,13 +23,13 @@ using System;
 using System.IO;
 using System.Reactive.Linq;
 using System.Windows.Forms;
-using System.Windows.Threading;
 using Dapplo.Windows.AppRestartManager;
 using Greenshot.Base.Core;
 using Greenshot.Base.Interfaces;
 using Greenshot.Editor.Destinations;
 using Greenshot.Editor.Drawing;
 using Greenshot.Editor.Forms;
+using Greenshot.Ipc;
 using log4net;
 using Greenshot.Base.Threading;
 using System.Threading.Tasks;
@@ -81,8 +81,9 @@ namespace Greenshot.Helpers
         /// <param name="iniDirectory">The active --ini-directory (absolute) or null, passed on so the restarted Greenshot uses the same greenshot.ini</param>
         public static void RegisterForRestart(string iniDirectory)
         {
-            // Register with the Windows Restart Manager so it can restart us after updates
-            // Don't restart if the application crashes
+            // Register with the Windows Restart Manager so it can restart us after updates (the setup, a Windows update with a reboot).
+            // Without flags Windows also restarts Greenshot after it crashed or hung and was ended, when it ran at least 60 seconds;
+            // that's wanted: Greenshot comes back and restores the editors (RestartNoCrash / RestartNoHang would switch it off).
             ApplicationRestartManager.RegisterForRestart(commandLineArgs: CreateRestartArguments(iniDirectory));
 
             // WM_QUERYENDSESSION is not answered, which allows the session to end (an update will take place).
@@ -103,20 +104,27 @@ namespace Greenshot.Helpers
             // The Restart Manager closes Greenshot for an installer (update or uninstall): greenshot-mcp has to exit too,
             // otherwise it keeps the installation directory locked
             bool closedForInstaller = endSessionMessage.EndSessionReason.HasFlag(Dapplo.Windows.AppRestartManager.Enums.EndSessionReasons.ENDSESSION_CLOSEAPP);
-            NotifyClientsOfShutdown(closedForInstaller ? Ipc.NamedPipeServer.ShutdownReasonUpdate : Ipc.NamedPipeServer.ShutdownReasonSessionEnd);
+            NotifyClientsOfShutdown(closedForInstaller ? NamedPipeServer.ShutdownReasonUpdate : NamedPipeServer.ShutdownReasonSessionEnd);
             SaveEditorState();
             // Don't wait for the exit, the editors might want to ask the user something
             UiDispatcher.Current.RunOnUiAsync(() =>
             {
+                // Closes the WinForms forms (the editors)
                 Application.Exit();
+                SessionEndShutdown?.Invoke();
                 Environment.Exit(0);
             }).FireAndLog("Exit after the end of the session", Log);
         }
 
         /// <summary>
-        /// Tells the named pipe clients that Greenshot exits, set by the MainForm
+        /// Tells the named pipe clients that Greenshot exits, set by the GreenshotShell
         /// </summary>
         internal static Func<string, Task> ShutdownNotifier { get; set; }
+
+        /// <summary>
+        /// The essential cleanup when the session ends, without waiting for anything; set by the GreenshotShell, called on the UI thread
+        /// </summary>
+        internal static Action SessionEndShutdown { get; set; }
 
         /// <summary>
         /// How long the end of the session waits for the clients to get the shutdown message

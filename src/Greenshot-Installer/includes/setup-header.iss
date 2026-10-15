@@ -15,6 +15,10 @@ AppUpdatesURL=https://getgreenshot.org
 AppVerName={#AppDisplayName} {#Version}
 AppVersion={#Version}
 ArchitecturesInstallIn64BitMode=x64compatible
+#ifndef IsLightEdition
+; Greenshot.exe of the full version is a 64-bit exe (see Greenshot.csproj), Greenshot Light (AnyCPU) also runs on 32-bit Windows
+ArchitecturesAllowed=x64compatible
+#endif
 Compression=lzma2/ultra64
 SolidCompression=yes
 DefaultDirName={autopf}\{#ExeName}
@@ -22,7 +26,7 @@ DefaultGroupName={#ExeName}
 InfoBeforeFile=additional_files\readme.txt
 LicenseFile=additional_files\gpl-3.0.rtf
 LanguageDetectionMethod=uilanguage
-MinVersion=10.0.10240
+MinVersion=10.0.17763
 OutputDir=..\..\installer
 ; user may choose between all-users vs. current-user installation in a dialog or by using the /ALLUSERS flag (on the command line)
 ; in registry section, HKA will take care of the appropriate root key (HKLM vs. HKCU), see https://jrsoftware.org/ishelp/index.php?topic=admininstallmode

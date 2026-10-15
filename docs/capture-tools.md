@@ -1,8 +1,8 @@
 # Capture tools and overlays: extending the interactive capture
 
-The interactive capture shows a frozen capture of the whole screen in the `CaptureWindow` (WPF, `src/Greenshot/UI/Capture`).
+The interactive capture shows a frozen capture of the whole screen in the `CaptureWindow` (WPF, `src/Greenshot/Capturing/Views`).
 What the user can do on it comes from **capture tools**: the region, window and text selections are each one tool class in
-`src/Greenshot/UI/Capture/Tools`. One tool is active at a time. Next to it, **overlays** can run for as long as the window is open,
+`src/Greenshot/Capturing/Tools`. One tool is active at a time. Next to it, **overlays** can run for as long as the window is open,
 e.g. a color picker which shows the color under the cursor while a region is selected. Plugins can add both.
 This document explains how to write them, in Greenshot itself or in a plugin, and what is possible and what is not,
 with a color picker as the example.
@@ -38,7 +38,7 @@ information or a shortcut to whatever the user is doing, without changing how th
 | Tool | Mode | Key | What it does |
 |---|---|---|---|
 | `RegionCaptureTool` | `Region` | Space toggles | Drag or Enter/Enter for a rectangle, includes the pixel under the cursor |
-| `WindowCaptureTool` | `Window` | Space toggles | The selection animates to the (child) window under the cursor, D for debug info |
+| `WindowCaptureTool` | `Window` | Space toggles | The selection animates to the (child) window under the cursor, D for debug info. For beta testers it also follows the UI Automation areas inside a window (e.g. the parts of a browser page), PageUp/PageDown select the larger/smaller area; a turning mark next to the cursor shows when reading the areas takes longer than 200 ms. In `Greenshot.Base` (`Greenshot.Base.Capturing`), a plugin can derive from it, and override `SelectsAreas` to select whole windows only |
 | `TextCaptureTool` | `Text` | T | Extends the region tool: shows the OCR lines, a click selects a line |
 
 ## Adding a tool, step by step
@@ -49,10 +49,12 @@ information or a shortcut to whatever the user is doing, without changing how th
    The window starts with the first tool whose mode the recipe asked for, so a tool with the mode of a built-in tool is never
    the starting tool. In Greenshot itself a new kind of selection can get its own value at the end of `CaptureMode`
    (`src/Greenshot.Base/Interfaces/CaptureMode.cs`); a plugin uses an existing value, e.g. `Region` when it accepts a rectangle.
+   To start with your tool, a recipe sets the `SelectionTool` parameter of its interactive selection step to the tool's `Id`
+   (default: the name of its mode, so override it in a plugin tool, e.g. `"ColorPicker"`). Without a tool of that id the mode decides.
 3. Register its keys in `Attach`, see Keys: `Host.RegisterToolKey` for keys which only work while the tool is active (e.g. Enter),
    and optionally `Host.RegisterKey` for a key which switches to the tool (`Host.ActivateTool(this)`), like T for the text tool.
 4. Make the window use it:
-   - **In Greenshot:** put the class in `src/Greenshot/UI/Capture/Tools` and add it to `CreateTools` in `CaptureWindow.xaml.cs`.
+   - **In Greenshot:** put the class in `src/Greenshot/Capturing/Tools` and add it to `CreateTools` in `CaptureWindow.xaml.cs`.
      Wrap it in `#if !GREENSHOT_LIGHT` if the tool should not be in the Light edition.
    - **In a plugin:** implement `ICaptureToolProvider` and register it in the plugin's `Initialize`, see below.
 
@@ -74,6 +76,20 @@ SimpleServiceProvider.Current.AddService<ICaptureToolProvider>(new ColorPickerTo
 
 The tools of the plugins come after the built-in ones, in the order the plugins were loaded. A key which is already taken
 (by the window or an earlier tool) is refused with an error, see Keys. The Light edition loads no plugins, so it has no plugin tools.
+
+### A tool which takes its own image
+
+Normally the flow crops the frozen capture to the selection. A tool which implements `ISelectionCaptureTool` takes a new image instead:
+after the window closed, the interactive selection step calls `CaptureSelectionAsync(selection, screenArea, ui, cancellationToken)`
+on a pool thread, and the image it returns replaces the capture (null cancels the flow). This is for a tool which has to change
+the window to capture it. `WindowCaptureSession` (`Greenshot.Base.Capturing`) captures one window over many frames
+with Windows Graphics Capture, without what covers it.
+
+### Recipes from a plugin
+
+A plugin which brings a tool can bring the recipe which starts with it: register an `IBuiltInRecipeProvider`
+(`Greenshot.Base.Recipes`) in `ConfigureServices` with `services.AddService<IBuiltInRecipeProvider>(...)`. Its recipes are added
+to the built-in recipes when the recipes are loaded after the plugins registered.
 
 ### The life of a tool
 
@@ -184,7 +200,7 @@ The keys of the window and the built-in tools:
 
 ### Example: the help overlay
 
-The help is a built-in overlay (`src/Greenshot/UI/Capture/Tools/HelpOverlay.cs`): F1 shows a panel with the keys which work now,
+The help is a built-in overlay (`src/Greenshot/Capturing/Overlays/HelpOverlay.cs`): F1 shows a panel with the keys which work now,
 the keys of the active tool first, as key caps like the hotkey settings show them. Keys with the same description share a row
 (the four arrow keys, left and right Shift). Because it reads `Host.KeyBindings`, keys of plugin tools and overlays are in it too,
 and the descriptions are read when the panel is shown, in the current language. When the tool changes, the panel is shown again
@@ -204,7 +220,7 @@ using Greenshot.Base.Core;
 using Greenshot.Base.Interfaces.Capture;
 using Greenshot.Base.Languages;
 
-namespace Greenshot.UI.Capture.Tools
+namespace Greenshot.Capturing.Overlays
 {
     /// <summary>
     /// F1 shows or hides a panel with the keys which work now: those of the active tool first, then those which are always active.
@@ -343,12 +359,15 @@ where things go. Two ways:
 - **A panel in a corner**, like a help text: `Host.ShowPanel(this, contentSize, dc => ...)` with drawn content, or
   `Host.ShowPanel(this, content)` with WPF content (see below). The window does the rest:
   - It draws the panel in Greenshot's style (`ToolStyle.DrawPanel`: theme colors, rounded corners, padding) with your content on it.
-  - It places it in the corner of the monitor under the cursor which is farthest from the cursor and doesn't cover the selection,
-    the zoomer or other panels, at least `PanelPlacement.CursorClearance` (40 pixels) from the cursor and `PanelPlacement.Margin`
-    (10) from the edge.
-  - On every mouse move it checks the place again: as long as it is fine the panel stays, otherwise it **slides** to the new corner
-    (`PanelMoveAnimation` in `CaptureWindow.xaml`, 0.35 s with the same easing as the window selection). A panel **fades** in
-    when shown, and out with `Host.HidePanel(this)`.
+  - It places it in the corner of the monitor under the cursor which is farthest from the cursor and doesn't cover the selection
+    or other panels, at least `PanelPlacement.CursorClearance` (40 pixels) from the cursor and `PanelPlacement.Margin`
+    (10) from the edge. The zoomer is not avoided: it moves with the cursor and avoids the panels itself.
+  - On every mouse move it checks the place again. A panel stays where it is unless the cursor comes close, or it covers more
+    than a quarter (`PanelPlacement.ToleratedOverlap`) of the selection, or the selection of it, while a completely free corner exists:
+    going from one overlap to another isn't worth a jump. The selection only counts once it stayed the same for 0.3 s, so a
+    window selection that follows the cursor from window to window doesn't chase the panels around. When a panel moves it
+    **slides** to the new corner (`PanelMoveAnimation` in `CaptureWindow.xaml`, 0.35 s with the same easing as the window
+    selection). A panel **fades** in when shown, and out with `Host.HidePanel(this)`.
   - The place is reserved: the zoomer and the other panels avoid it.
   - In a remote desktop session the panel jumps and appears without fading.
 
@@ -363,7 +382,7 @@ The help overlay (see Keys) is an example of a panel: it is drawn with key caps 
 
 A panel can also show WPF content: `Host.ShowPanel(this, content)` with any `FrameworkElement`, usually a `UserControl` whose
 `DataContext` is a view model. The overlay only updates the view model, the bindings update the text, and the window keeps the
-panel in a free corner as above. The built-in info overlay (`src/Greenshot/UI/Capture/Tools/InfoOverlay.cs` and `InfoPanel.xaml`)
+panel in a free corner as above. The built-in info overlay (`src/Greenshot/Capturing/Overlays/InfoOverlay.cs`, the view `Capturing/Views/InfoPanelView.xaml` and its view model `Capturing/ViewModels/InfoPanelViewModel.cs`)
 works this way. What the window does with the content:
 
 - It puts it in a `Border` in Greenshot's style (`ToolStyle.CreatePanel`): theme background and border, rounded corners, padding,

@@ -30,7 +30,6 @@ using Dapplo.Windows.Common.Structs;
 using Greenshot.Base.Core;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Drawing;
-using Greenshot.Editor.Configuration;
 using Greenshot.Editor.Drawing.Fields;
 using Greenshot.Editor.Drawing.Filters;
 using Greenshot.Editor.Forms;
@@ -190,8 +189,8 @@ namespace Greenshot.Editor.Drawing
             Invalidate();
             foreach (var dc in this)
             {
-                dc.Left += dx;
-                dc.Top += dy;
+                // Let the element decide, e.g. a cut mark only moves across the cut
+                dc.MoveBy(dx, dy);
                 modified = true;
             }
 

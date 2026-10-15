@@ -300,6 +300,16 @@ namespace Greenshot.Base.Languages
         string CaptureKeyWindowDetails { get; }
 
         /// <summary>
+        /// Select the larger area around it
+        /// </summary>
+        string CaptureKeyWindowLarger { get; }
+
+        /// <summary>
+        /// Select the smaller area inside it
+        /// </summary>
+        string CaptureKeyWindowSmaller { get; }
+
+        /// <summary>
         /// Show or hide the keys
         /// </summary>
         string CaptureKeyHelp { get; }
@@ -461,6 +471,31 @@ namespace Greenshot.Base.Languages
         string ExportedToError { get; }
 
         /// <summary>
+        /// Edit
+        /// </summary>
+        string NotificationButtonEdit { get; }
+
+        /// <summary>
+        /// Barcode: {0}
+        /// </summary>
+        string NotificationBarcode { get; }
+
+        /// <summary>
+        /// QR code: {0}
+        /// </summary>
+        string NotificationQrcode { get; }
+
+        /// <summary>
+        /// Show in folder
+        /// </summary>
+        string NotificationButtonFolder { get; }
+
+        /// <summary>
+        /// Copy link
+        /// </summary>
+        string NotificationButtonCopylink { get; }
+
+        /// <summary>
         /// Greenshot Help
         /// </summary>
         string HelpTitle { get; }
@@ -579,11 +614,6 @@ namespace Greenshot.Base.Languages
         /// Save directly (using preferred file output settings)
         /// </summary>
         string QuicksettingsDestinationFile { get; }
-
-        /// <summary>
-        /// Right-click here or press the {0} key.
-        /// </summary>
-        string TooltipFirststart { get; }
 
         /// <summary>
         /// A newer version of Greenshot is available! Do you want to download Greenshot {0}?

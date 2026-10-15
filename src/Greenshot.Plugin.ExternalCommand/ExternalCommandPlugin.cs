@@ -23,20 +23,20 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Windows.Forms;
 using Greenshot.Base.Core;
-using Greenshot.Base.Core.Enums;
 using Dapplo.Ini;
 using Greenshot.Base.Core.FileFormat;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Plugin;
-using Greenshot.Base.Pipeline;
-using Greenshot.Base.Recipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Greenshot.Base.Recipes.Pipeline;
 using Greenshot.Base.Threading;
 using Greenshot.Base.Languages;
+using Greenshot.Plugin.ExternalCommand.Destinations;
+using Greenshot.Plugin.ExternalCommand.Recipes;
+using Greenshot.Plugin.ExternalCommand.Views;
 
 namespace Greenshot.Plugin.ExternalCommand;
 
@@ -48,7 +48,7 @@ public class ExternalCommandPlugin : IGreenshotPlugin, IConfigurablePlugin, IRec
     private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(typeof(ExternalCommandPlugin));
     private static ICoreConfiguration CoreConfig;
     private static IExternalCommandConfiguration ExternalCommandConfig;
-    private ToolStripMenuItem _itemPlugInRoot;
+    private TrayMenuEntry _itemPlugInRoot;
 
     public ValueTask DisposeAsync()
     {
@@ -127,7 +127,7 @@ public class ExternalCommandPlugin : IGreenshotPlugin, IConfigurablePlugin, IRec
         // The destinations come from the loaded configuration
         services.AddServices(CreateDestinations);
         services.AddRecipeStepProvider(this);
-        services.AddSettingsView<IExternalCommandConfiguration>(_ => new Forms.ExternalCommandConfigurationControl());
+        services.AddSettingsView<IExternalCommandConfiguration>(_ => new ExternalCommandConfigurationView());
     }
 
     public object CreateSettingsViewModel(IServiceProvider services) => ExternalCommandConfig;
@@ -173,7 +173,7 @@ public class ExternalCommandPlugin : IGreenshotPlugin, IConfigurablePlugin, IRec
 
     private void Start()
     {
-        _itemPlugInRoot = new ToolStripMenuItem();
+        _itemPlugInRoot = new TrayMenuEntry();
         _itemPlugInRoot.Click += ConfigMenuClick;
         OnIconSizeChanged(this, new PropertyChangedEventArgs("IconSize"));
         OnLanguageChanged(this, null);
@@ -255,6 +255,6 @@ public class ExternalCommandPlugin : IGreenshotPlugin, IConfigurablePlugin, IRec
     private void ConfigMenuClick(object sender, EventArgs eventArgs)
     {
         // Show the settings of this plugin
-        SimpleServiceProvider.Current.GetInstance<IGreenshotMainForm>(isOptional: true)?.ShowSetting(Name);
+        SimpleServiceProvider.Current.GetInstance<IGreenshotShell>(isOptional: true)?.ShowSetting(Name);
     }
 }

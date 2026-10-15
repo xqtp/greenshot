@@ -23,13 +23,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dapplo.Windows.Common.Structs;
-using Greenshot.Base.Core;
+using Dapplo.Windows.Desktop;
 using Greenshot.Base.Interfaces;
-using Greenshot.Base.Pipeline;
 using Greenshot.Base.Recipes;
-using Greenshot.Base.Triggers;
-using Greenshot.Pipeline;
+using Greenshot.Base.Recipes.Pipeline;
+using Greenshot.Base.Recipes.Triggers;
 using Greenshot.Recipes;
+using Greenshot.Recipes.Pipeline;
 using log4net;
 
 namespace Greenshot.Helpers
@@ -98,7 +98,7 @@ namespace Greenshot.Helpers
         /// <summary>
         /// Capture the window, e.g. one picked from the tray menu
         /// </summary>
-        public static void CaptureWindow(WindowDetails windowToCapture) => Start(RecipeManager.RecipeIdActiveWindow, configure: ctx => ctx.Properties["TargetWindow"] = windowToCapture);
+        public static void CaptureWindow(IInteropWindow windowToCapture) => Start(RecipeManager.RecipeIdActiveWindow, configure: ctx => ctx.Properties["TargetWindow"] = windowToCapture);
 
         /// <summary>
         /// Let the user select the window to capture

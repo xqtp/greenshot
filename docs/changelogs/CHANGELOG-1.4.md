@@ -161,6 +161,24 @@ Continuous builds are automatically created for every commit to the `main` branc
 - Added custom agent for translations to improve localization workflow
 - By @jklingen
 
+#### 🔔 Notifications
+
+**Better notifications** (#1516)
+- After a capture you get one notification that shows a small preview and lists where the capture went
+- Click the notification to send the capture somewhere else, even after Greenshot was closed
+- Buttons on the notification let you edit the capture, open its folder or copy the link of an upload
+- If an export fails, the notification says which one and why
+- QR codes found in a capture are shown on the notification, and their links can be copied
+- Greenshot appears only once in the Windows notification settings
+- Choose in the settings which notifications you want to see (all, warnings and errors, errors only, or none) and whether they show a preview
+
+#### 🖼️ Imgur
+
+**Imgur uploads removed, delete your old ones in Self-Service**
+- Greenshot no longer uploads to Imgur: Imgur would only allow it with paid or capped access for all Greenshot users
+- If you uploaded images anonymously with an earlier Greenshot, it still has their delete keys: Self-Service lists those images so you can delete them from Imgur
+- Save the delete links as a web page to keep them
+
 ### Bug Fixes & Improvements
 
 #### 🐛 Critical Fixes

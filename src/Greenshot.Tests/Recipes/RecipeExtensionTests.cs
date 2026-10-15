@@ -26,13 +26,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Greenshot.Base.Core;
-using Greenshot.Base.Expressions;
-using Greenshot.Base.Pipeline;
-using Greenshot.Base.Pipeline.Contracts;
 using Greenshot.Base.Recipes;
-using Greenshot.Base.Triggers;
-using Greenshot.Pipeline;
+using Greenshot.Base.Recipes.Contracts;
+using Greenshot.Base.Recipes.Expressions;
+using Greenshot.Base.Recipes.Pipeline;
+using Greenshot.Base.Recipes.Triggers;
 using Greenshot.Recipes;
+using Greenshot.Recipes.Approval;
+using Greenshot.Recipes.Pipeline;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -41,6 +42,8 @@ namespace Greenshot.Tests.Recipes
     /// <summary>
     /// Recipe extensions: slots, the composer, the extension format and its checks, and the built-in extensions
     /// </summary>
+    // Uses the recipe trust store through RecipeApprovalTests.WithTemporaryTrustStore, like the tests of that collection
+    [Collection(TestCollections.RecipeManager)]
     public class RecipeExtensionTests
     {
         public RecipeExtensionTests()

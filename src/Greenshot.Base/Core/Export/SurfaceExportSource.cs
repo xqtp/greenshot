@@ -22,10 +22,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Greenshot.Base.Core.Enums;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Plugin;
 using Greenshot.Base.Threading;
@@ -180,7 +178,7 @@ namespace Greenshot.Base.Core.Export
                     // The greenshot format serializes the elements of the surface: UI thread
                     bytes = await _ui.InvokeAsync(() =>
                     {
-                        using var stream = new MemoryStream();
+                        using var stream = RecyclableMemoryStreamFactory.GetStream("SurfaceExportSource.Encode");
                         ImageIO.SaveToStream(_surface, stream, settings);
                         return stream.ToArray();
                     }, cancellationToken).ConfigureAwait(false);
@@ -188,8 +186,9 @@ namespace Greenshot.Base.Core.Export
                 else
                 {
                     var image = await RenderLockedAsync(settings, cancellationToken).ConfigureAwait(false);
-                    using var stream = new MemoryStream();
-                    ImageIO.SaveToStream(image, null, stream, settings);
+                    using var stream = RecyclableMemoryStreamFactory.GetStream("SurfaceExportSource.Encode");
+                    // pass the surface to SaveToStream so that the FormatHandler can access the CaptureDetails
+                    ImageIO.SaveToStream(image, _surface, stream, settings);
                     bytes = stream.ToArray();
                 }
 
@@ -224,7 +223,7 @@ namespace Greenshot.Base.Core.Export
                 return null;
             }
 
-            return $"{settings.Format}|{settings.JPGQuality}|{settings.ReduceColors}|{settings.DisableReduceColors}|{settings.SaveBackgroundOnly}";
+            return $"{settings.Format}|{settings.JPGQuality}|{settings.ReduceColors}|{settings.DisableReduceColors}|{settings.SaveBackgroundOnly}|{settings.EncodingCacheKey}";
         }
 
         private void ThrowIfDisposed()

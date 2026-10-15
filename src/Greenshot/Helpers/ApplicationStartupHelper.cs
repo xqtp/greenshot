@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Greenshot - a free and open source screenshot tool
  * Copyright (C) 2007-2026 Thomas Braun, Jens Klingen, Robin Krom
  * 
@@ -21,14 +21,15 @@
 
 using System;
 using System.IO;
-using System.Windows.Threading;
 using Dapplo.Ini;
 using Greenshot.Base.Core;
 using Greenshot.Base.Interfaces;
-using Greenshot.Configuration;
+using Greenshot.Recipes.Triggers;
+using Greenshot.Views;
 using log4net;
 using Greenshot.Base.Threading;
-using System.Threading;
+using System.Threading;
+
 using Greenshot.Base.Languages;
 
 namespace Greenshot.Helpers
@@ -39,26 +40,13 @@ namespace Greenshot.Helpers
         private static readonly ICoreConfiguration config = IniConfigRegistry.GetSection<ICoreConfiguration>();
 
         /// <summary>
-        /// Performs initialization tasks for the application's first launch and displays an informational message to the user.
+        /// Show the welcome window: at the first start, or when greenshot-cli asks for it
         /// </summary>
-        /// <remarks>This method marks the application as no longer in its first launch state and shows a
-        /// balloon notification with a localized message. The notification includes a callback that opens the settings
-        /// dialog when triggered. Typically called during application startup to provide guidance to new
-        /// users.</remarks>
-        public static void FirstLaunch()
+        public static void ShowWelcome()
         {
-            config.IsFirstLaunch = false;
-            LOG.Info("FirstLaunch: Created new configuration, showing balloon.");
-            var notifyIconClassicMessageHandler = SimpleServiceProvider.Current.GetInstance<INotificationService>();
-
-            notifyIconClassicMessageHandler.ShowInfoMessage(
-                string.Format(Texts.Core.TooltipFirststart, HotkeyManager.GetLocalizedHotkeyStringFromString(config.RegionHotkey)),
-                TimeSpan.FromMinutes(10),
-                () =>
-                {
-                    var mainForm = SimpleServiceProvider.Current.GetInstance<IGreenshotMainForm>();
-                    mainForm.ShowSetting();
-                });
+            config.WelcomeShown = true;
+            LOG.Info("Showing the welcome window.");
+            WelcomeWindow.ShowWelcome();
         }
 
         /// <summary>
@@ -80,11 +68,11 @@ namespace Greenshot.Helpers
                 // Make sure the current hotkeys are disabled
                 HotkeyManager.UnregisterHotkeys();
                 IniConfigRegistry.Get().Reload();
-                var mainForm = SimpleServiceProvider.Current.GetInstance<IGreenshotMainForm>();
+                var shell = SimpleServiceProvider.Current.GetInstance<IGreenshotShell>(isOptional: true);
                 // Even update language when needed
-                mainForm.UpdateUi();
+                shell?.UpdateUi();
                 // Update the hotkey
-                HotkeyHelper.RegisterHotkeys();
+                TriggerManager.Instance.RestartHotkeyTriggers();
             }
             catch (Exception ex)
             {

@@ -21,11 +21,13 @@
 
 using System;
 using System.Threading;
+using Greenshot.Ai.Views;
 using Greenshot.Base.Core;
 using Greenshot.Base.Wpf;
-using Greenshot.Forms.Wpf;
+using Greenshot.Plugins.Views;
+using Greenshot.Settings.ViewModels;
+using Greenshot.Settings.Views;
 using Xunit;
-using Xunit.Abstractions;
 using Greenshot.Base.Languages;
 using Greenshot.Plugin.Box;
 using Greenshot.Plugin.Dropbox;
@@ -151,7 +153,7 @@ namespace Greenshot.Tests.Forms
                     Assert.NotNull(window);
                     Assert.NotNull(window.DataContext);
 
-                    var windowWithPlugin = new SettingsWindow("Imgur");
+                    var windowWithPlugin = new SettingsWindow("Jira");
                     Assert.NotNull(windowWithPlugin);
                 }
                 catch (Exception ex)

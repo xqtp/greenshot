@@ -23,11 +23,11 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Greenshot.Base.Pipeline;
 using Greenshot.Base.Recipes;
+using Greenshot.Base.Recipes.Pipeline;
+using Greenshot.Base.Recipes.Triggers;
 using Greenshot.Base.Threading;
-using Greenshot.Base.Triggers;
-using Greenshot.Pipeline;
+using Greenshot.Recipes.Pipeline;
 using Xunit;
 
 namespace Greenshot.Tests.Threading
@@ -207,7 +207,7 @@ namespace Greenshot.Tests.Threading
 
             public void BringToFront() => BroughtToFront++;
 
-            public Task<SelectionResult> SelectAsync(Base.Interfaces.ICapture fullscreenCapture, System.Collections.Generic.IReadOnlyList<Base.Core.WindowDetails> visibleWindows, Base.Interfaces.CaptureMode initialMode, CancellationToken cancellationToken = default)
+            public Task<SelectionResult> SelectAsync(Base.Interfaces.ICapture fullscreenCapture, System.Collections.Generic.IReadOnlyList<Dapplo.Windows.Desktop.IInteropWindow> visibleWindows, Base.Interfaces.CaptureMode initialMode, string initialTool, CancellationToken cancellationToken = default)
             {
                 return Task.FromResult<SelectionResult>(null);
             }

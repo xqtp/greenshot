@@ -29,15 +29,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Greenshot.Base;
 using Greenshot.Base.Core;
-using Greenshot.Base.Core.Enums;
 using Greenshot.Base.Core.FileFormat;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Plugin;
-using Greenshot.Base.Pipeline;
 using Greenshot.Base.Recipes;
+using Greenshot.Base.Recipes.Pipeline;
 using Greenshot.Editor.Destinations;
 using Greenshot.Editor.FileFormatHandlers;
-using Greenshot.Pipeline;
+using Greenshot.Recipes.Pipeline;
 using Xunit;
 
 namespace Greenshot.Tests.Recipes
@@ -141,7 +140,6 @@ namespace Greenshot.Tests.Recipes
             {
                 Payload = new CapturePayload(capture)
             };
-            context.Properties["EnableCompletionNotification"] = false;
             context.Properties["Destination.PromptQuality"] = false;
             context.Properties["Destination.CopyPathToClipboard"] = false;
             // Same as OutputFileFormat=greenshot in the configuration

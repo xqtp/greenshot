@@ -20,12 +20,14 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Windows;
 using Greenshot.Base.Core;
 using Greenshot.Base.Wpf;
-using Greenshot.UI.SelfService;
+using Greenshot.SelfService.Imgur;
+using Greenshot.SelfService.ViewModels;
+using Greenshot.SelfService.Views;
 using Xunit;
 
 namespace Greenshot.Tests.Forms
@@ -45,13 +47,14 @@ namespace Greenshot.Tests.Forms
 
             Assert.NotNull(vm.Sections);
 #if DEBUG
-            Assert.Equal(6, vm.Sections.Count);
+            Assert.Equal(7, vm.Sections.Count);
             Assert.NotNull(vm.IntegrationDebugSection);
 #else
-            Assert.Equal(5, vm.Sections.Count);
+            Assert.Equal(6, vm.Sections.Count);
 #endif
 
             Assert.NotNull(vm.SystemInfoSection);
+            Assert.NotNull(vm.SetupSection);
             Assert.NotNull(vm.FileInfoSection);
             Assert.NotNull(vm.ClipboardSection);
             Assert.NotNull(vm.HotkeySection);
@@ -197,6 +200,37 @@ namespace Greenshot.Tests.Forms
             Assert.NotEmpty(hotkeys.Contenders);
             Assert.Contains(hotkeys.Contenders, c => c.Name == "ShareX");
             Assert.Contains(hotkeys.Contenders, c => c.Name == "Windows Snipping Tool");
+        }
+
+        [Fact]
+        public void ImgurSection_OnlyWithUploads_ListsThem_AndExportsThemAsAWebPage()
+        {
+            var config = IniConfigHelper.EnsureSection<IImgurConfiguration>(() => new ImgurConfigurationImpl());
+            var previousHistory = config.ImgurUploadHistory;
+            try
+            {
+                config.ImgurUploadHistory = new Dictionary<string, string>();
+                Assert.Null(new SelfServiceViewModel().ImgurSection);
+
+                config.ImgurUploadHistory = new Dictionary<string, string> { ["abc"] = "def" };
+                var vm = new SelfServiceViewModel();
+                Assert.Contains(vm.ImgurSection, vm.Sections);
+                Assert.Equal("https://imgur.com/abc", Assert.Single(vm.ImgurSection.Uploads).Link);
+
+                // The web page for the user: thumbnail, link and delete link per upload, the texts encoded
+                string html = ImgurApi.CreateExport(new[] { ("abc", "d<f", "A <b> title", (DateTime?)null) }, "Uploads", "Intro", "Delete this image");
+                Assert.Contains("https://i.imgur.com/abcs.jpg", html);
+                Assert.Contains("https://imgur.com/delete/d&lt;f", html);
+                Assert.Contains("A &lt;b&gt; title", html);
+
+                vm.ImgurSection.ForgetAll();
+                Assert.Empty(vm.ImgurSection.Uploads);
+                Assert.Empty(config.ImgurUploadHistory);
+            }
+            finally
+            {
+                config.ImgurUploadHistory = previousHistory;
+            }
         }
 
         [Fact]

@@ -24,18 +24,21 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using Dapplo.Ini;
 using Greenshot.Base.Core;
-using Greenshot.Base.Drawing;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Interfaces.Drawing;
 using Greenshot.Base.Interfaces.Plugin;
-using Greenshot.Base.Pipeline;
 using Greenshot.Base.Recipes;
 using System.Threading;
 using System.Threading.Tasks;
+using Greenshot.Base.Recipes.Pipeline;
 using Greenshot.Base.Threading;
 using Greenshot.Base.Languages;
+using Greenshot.Plugin.Zxing.Destinations;
+using Greenshot.Plugin.Zxing.Drawing;
+using Greenshot.Plugin.Zxing.Processing;
+using Greenshot.Plugin.Zxing.Recipes;
+using Greenshot.Plugin.Zxing.Views;
 
 namespace Greenshot.Plugin.Zxing;
 
@@ -43,7 +46,7 @@ public class ZxingPlugin : IGreenshotPlugin, IConfigurablePlugin, IRecipeStepPro
 {
     private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(typeof(ZxingPlugin));
     private static IZxingConfiguration _config;
-    private ToolStripMenuItem _itemPlugInConfig;
+    private TrayMenuEntry _itemPlugInConfig;
     private ZxingCaptureProcessor _captureProcessor;
     private ZxingEditorPlugin _editorPlugin;
     private ZxingHotspotTransformer _hotspotTransformer;
@@ -71,7 +74,7 @@ public class ZxingPlugin : IGreenshotPlugin, IConfigurablePlugin, IRecipeStepPro
         services.AddService<IDestination>(new ZxingQrDestination());
         services.AddRecipeStepProvider(this);
         services.AddRecipeDrawableProvider(this);
-        services.AddSettingsView<IZxingConfiguration>(config => new Controls.ZxingConfigurationControl(config));
+        services.AddSettingsView<IZxingConfiguration>(config => new ZxingConfigurationView(config));
     }
 
     public object CreateSettingsViewModel(IServiceProvider services) => _config;
@@ -476,7 +479,7 @@ public class ZxingPlugin : IGreenshotPlugin, IConfigurablePlugin, IRecipeStepPro
             // Ignore
         }
 
-        _itemPlugInConfig = new ToolStripMenuItem
+        _itemPlugInConfig = new TrayMenuEntry
         {
             Image = icon,
             Text = PluginUtils.GetQuicklinkText("Zxing"),
@@ -530,7 +533,7 @@ public class ZxingPlugin : IGreenshotPlugin, IConfigurablePlugin, IRecipeStepPro
     /// </summary>
     private void ShowSettings()
     {
-        Greenshot.Base.Core.SimpleServiceProvider.Current.GetInstance<IGreenshotMainForm>(isOptional: true)?.ShowSetting(Name);
+        Greenshot.Base.Core.SimpleServiceProvider.Current.GetInstance<IGreenshotShell>(isOptional: true)?.ShowSetting(Name);
     }
 
     /// <summary>

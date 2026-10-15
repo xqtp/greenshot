@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Greenshot - a free and open source screenshot tool
  * Copyright (C) 2007-2026 Thomas Braun, Jens Klingen, Robin Krom
  * 
@@ -54,6 +54,7 @@ namespace Greenshot.Editor.Helpers
             {"System.Drawing.Color",typeof(System.Drawing.Color) },
             {"System.Drawing.Bitmap",typeof(System.Drawing.Bitmap) },
             {"System.Drawing.Icon",typeof(System.Drawing.Icon) },
+            {"System.Drawing.Imaging.Metafile",typeof(System.Drawing.Imaging.Metafile) },
             {"System.Drawing.Size",typeof(System.Drawing.Size) },
             {"System.IO.MemoryStream",typeof(System.IO.MemoryStream) },
             {"System.Drawing.StringAlignment",typeof(System.Drawing.StringAlignment) },
@@ -66,12 +67,17 @@ namespace Greenshot.Editor.Helpers
             {"Greenshot.Editor.Drawing.TextContainer", typeof(TextContainer) },
             {"Greenshot.Editor.Drawing.SpeechbubbleContainer", typeof(SpeechbubbleContainer) },
             {"Greenshot.Editor.Drawing.RectangleContainer", typeof(RectangleContainer) },
+            {"Greenshot.Editor.Drawing.CutMarkContainer", typeof(CutMarkContainer) },
+            {"Greenshot.Editor.Drawing.TornEdgeContainer", typeof(TornEdgeContainer) },
             {"Greenshot.Editor.Drawing.EllipseContainer", typeof(EllipseContainer) },
             {"Greenshot.Editor.Drawing.FreehandContainer", typeof(FreehandContainer) },
             {"Greenshot.Editor.Drawing.HighlightContainer", typeof(HighlightContainer) },
             {"Greenshot.Editor.Drawing.IconContainer", typeof(IconContainer) },
             {"Greenshot.Editor.Drawing.ObfuscateContainer", typeof(ObfuscateContainer) },
             {"Greenshot.Editor.Drawing.StepLabelContainer", typeof(StepLabelContainer) },
+            // Only used for the last used field values in the .ini
+            {"Greenshot.Editor.Drawing.CutMarkStyle", typeof(CutMarkStyle) },
+            {"Greenshot.Editor.Drawing.CropContainer+CropModes", typeof(CropContainer.CropModes) },
             {"Greenshot.Editor.Drawing.SvgContainer", typeof(SvgContainer) },
             {"Greenshot.Editor.Drawing.Emoji.EmojiContainer", typeof(EmojiContainer) },
             {"Greenshot.Editor.Drawing.VectorGraphicsContainer", typeof(VectorGraphicsContainer) },
