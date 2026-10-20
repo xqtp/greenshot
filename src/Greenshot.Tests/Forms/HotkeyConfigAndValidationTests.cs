@@ -142,9 +142,9 @@ namespace Greenshot.Tests.Forms
                     modal.Open("Test Recipe Hotkey", "Ctrl + Shift + R", s => savedResult = s);
                     Assert.True(Greenshot.Base.Wpf.ThemeManager.Instance.IsDarkTheme);
                     Assert.NotNull(modal.Resources[typeof(System.Windows.Controls.GroupBox)]);
-                    Assert.NotNull(modal.Resources[typeof(System.Windows.Controls.ComboBox)]);
-                    Assert.NotNull(modal.Resources[typeof(System.Windows.Controls.ComboBoxItem)]);
-                    Assert.NotNull(modal.Resources[typeof(System.Windows.Controls.CheckBox)]);
+                    Assert.NotNull(modal.TryFindResource(typeof(System.Windows.Controls.ComboBox)));
+                    Assert.NotNull(modal.TryFindResource("DefaultComboBoxItemStyle"));
+                    Assert.NotNull(modal.TryFindResource(typeof(System.Windows.Controls.CheckBox)));
                     Assert.Equal(System.Windows.Visibility.Visible, modal.Visibility);
 
                     var vm = modal.DataContext as HotkeyEditorViewModel;
@@ -381,6 +381,25 @@ namespace Greenshot.Tests.Forms
             Assert.True(triggered);
             Assert.Equal(0, HotkeyManager.CandidateSequenceCount);
             Assert.Equal(0, HotkeyManager.ActiveChordIndex);
+
+            HotkeyManager.ClearRegisteredHotkeys();
+        }
+
+        [Fact]
+        public void HotkeyManager_IsRegistered_OnlyWhileTheSequenceIsRegistered()
+        {
+            HotkeyManager.ClearRegisteredHotkeys();
+            var seq = HotkeySequence.Parse("Ctrl + Alt + Shift + F13");
+            Assert.False(HotkeyManager.IsRegistered(seq));
+
+            int id = HotkeyManager.RegisterHotKey(seq, () => { });
+            Assert.True(HotkeyManager.IsRegistered(seq));
+            Assert.True(HotkeyManager.IsRegistered(HotkeySequence.Parse("Ctrl + Alt + Shift + F13")));
+            Assert.False(HotkeyManager.IsRegistered(HotkeySequence.Parse("Ctrl + Alt + Shift + F14")));
+
+            HotkeyManager.UnregisterHotKey(id);
+            Assert.False(HotkeyManager.IsRegistered(seq));
+            Assert.False(HotkeyManager.IsRegistered(null));
 
             HotkeyManager.ClearRegisteredHotkeys();
         }

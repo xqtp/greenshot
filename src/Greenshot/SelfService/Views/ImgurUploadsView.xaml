@@ -14,16 +14,16 @@
 
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-            <TextBlock Text="{wpf:Text SelfService.ImgurTitle}" FontSize="18" FontWeight="SemiBold"/>
-            <TextBlock Text="{wpf:Text SelfService.ImgurSub}" FontSize="12" TextWrapping="Wrap" Margin="0,3,0,0"
+            <TextBlock Text="{wpf:Text SelfService.ImgurTitle}" FontSize="{wpf:FontSize 18}" FontWeight="SemiBold"/>
+            <TextBlock Text="{wpf:Text SelfService.ImgurSub}" FontSize="{wpf:FontSize 12}" TextWrapping="Wrap" Margin="0,3,0,0"
                        Foreground="{Binding Source={x:Static wpf:ThemeManager.Instance}, Path=MutedBrush}"/>
         </StackPanel>
 
         <WrapPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
-            <Button x:Name="DeleteButton" Content="{wpf:Text SelfService.ImgurDelete}" Click="OnDeleteClicked" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,0"/>
-            <Button x:Name="OpenButton" Content="{wpf:Text SelfService.ImgurOpen}" Click="OnOpenClicked" Margin="0,0,8,0"/>
-            <Button Content="{wpf:Text SelfService.ImgurExport}" Click="OnExportClicked" Margin="0,0,8,0"/>
-            <Button Content="{wpf:Text SelfService.ImgurForget}" Click="OnForgetClicked"/>
+            <Button x:Name="DeleteButton" Content="{wpf:Text SelfService.ImgurDelete}" Click="OnDeleteClicked" Style="{StaticResource ErrorButtonStyle}" Margin="0,0,8,0"/>
+            <Button x:Name="OpenButton" Content="{wpf:Text SelfService.ImgurOpen}" Click="OnOpenClicked" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"/>
+            <Button Content="{wpf:Text SelfService.ImgurExport}" Click="OnExportClicked" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"/>
+            <Button Content="{wpf:Text SelfService.ImgurForget}" Click="OnForgetClicked" Style="{StaticResource LightErrorButtonStyle}"/>
         </WrapPanel>
 
         <ListView x:Name="UploadsList" ItemsSource="{Binding Uploads}" SelectionMode="Extended" MinHeight="160"
