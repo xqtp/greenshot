@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Dapplo.Windows.Common.Structs;
@@ -338,8 +339,9 @@ namespace Greenshot.Base.Core
                 }
             }
 
-            // Set defaults for properties that need computed defaults
-            if (string.IsNullOrEmpty(OutputFilePath) || !Directory.Exists(OutputFilePath))
+            // Set defaults for properties that need computed defaults. A configured folder stays, also when it doesn't exist right now
+            // (a network drive at the logon, variables like ${YYYY}), see GetOutputDirectory
+            if (string.IsNullOrEmpty(OutputFilePath))
             {
                 OutputFilePath = CreateOutputFilePath();
             }
@@ -364,11 +366,48 @@ namespace Greenshot.Base.Core
             }
             ExcludePlugins ??= new List<string>();
             IncludePlugins ??= new List<string>();
+            ExcludePluginNames ??= new List<string>();
+            AllowedPluginNames ??= new List<string>();
+            BlockedPluginNames ??= new List<string>();
+            AllowedDestinations ??= new List<string>();
+            BlockedDestinations ??= new List<string>();
+            PluginApprovedHashes ??= new List<string>();
+            PluginRejectedHashes ??= new List<string>();
+            PluginVerifiedHashes ??= new List<string>();
+            // The plugin lists of the user use the names now, values in greenshot-fixed.ini are still read where they are
+            if (MoveToPluginNames(nameof(ExcludePlugins), ExcludePlugins, nameof(ExcludePluginNames), ExcludePluginNames)
+                | MoveToPluginNames(nameof(IncludePlugins), IncludePlugins, nameof(AllowedPluginNames), AllowedPluginNames))
+            {
+                MarkAsDirty();
+            }
             AllowedUntrustedCertificateHosts ??= new List<string>();
             AllowedCertificateThumbprints ??= new List<string>();
             AiToolsExcludedProcesses ??= new List<string>();
             AiToolsAllowedClients ??= new List<string>();
             AiToolsMcpServerPaths ??= new List<string>();
+        }
+
+        /// <summary>
+        /// Move the plugin identifiers of IncludePlugins or ExcludePlugins, e.g. Box Plugin, to the list with the names, e.g. Box
+        /// </summary>
+        /// <returns>true when something was moved</returns>
+        private bool MoveToPluginNames(string identifiersKey, List<string> identifiers, string namesKey, List<string> names)
+        {
+            if (IsConstant(identifiersKey) || IsConstant(namesKey) || !ConfigurationRestrictions.Names(identifiers).Any())
+            {
+                return false;
+            }
+
+            foreach (var name in ConfigurationRestrictions.Names(identifiers).Select(ConfigurationRestrictions.PluginNameFromLegacyIdentifier))
+            {
+                if (!names.Contains(name, StringComparer.OrdinalIgnoreCase))
+                {
+                    names.Add(name);
+                }
+            }
+
+            identifiers.Clear();
+            return true;
         }
 
         public bool OnBeforeSave()

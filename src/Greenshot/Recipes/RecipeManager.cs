@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -130,7 +130,8 @@ namespace Greenshot.Recipes
                 {
                     _builtInExtensions[extension.Id] = extension;
                 }
-                RegisterExtension(extension);
+                // Nothing is composed yet: GetEffectiveRecipe composes a recipe when it is needed
+                AddExtension(extension);
             }
         }
 
@@ -138,6 +139,16 @@ namespace Greenshot.Recipes
         /// Adds an extension after checking it; an invalid one is not added
         /// </summary>
         public RecipeValidationResult RegisterExtension(RecipeExtension extension)
+        {
+            var result = AddExtension(extension);
+            if (result.IsValid)
+            {
+                RecomposeRecipes();
+            }
+            return result;
+        }
+
+        private RecipeValidationResult AddExtension(RecipeExtension extension)
         {
             var result = RecipeValidator.Validate(extension);
             if (extension?.Extends?.Recipes != null)
@@ -160,7 +171,6 @@ namespace Greenshot.Recipes
             {
                 _extensions[extension.Id] = extension;
             }
-            RecomposeRecipes();
             return result;
         }
 
@@ -250,20 +260,16 @@ namespace Greenshot.Recipes
                 "Capture region",
                 "Interactively select a region on the screen")
                 .AddNode(RecipeStepConfig.CreateSource("acquire", CaptureSourceType.Region))
-                .AddNode(RecipeStepConfig.CreateProcessors("scan_pre", timing: ProcessorTiming.PreSelection).WithName("Scan Before Selection"))
                 .AddNode(RecipeStepConfig.CreateSelection("select", CaptureMode.Region))
                 .AddNode(RecipeStepConfig.CreateFeedback("feedback"))
-                .AddNode(RecipeStepConfig.CreateProcessors("scan_post", timing: ProcessorTiming.PostSelection).WithName("Process After Selection"))
                 .AddNode(RecipeStepConfig.CreateDestinations("export"))
                 .AddNode(RecipeStepConfig.CreateNotification("notify"));
             regionRecipe.Flow = new RecipeFlowConfig("acquire")
-                .AddTransition("acquire", "scan_pre")
-                .AddTransition("scan_pre", "select")
+                .AddTransition("acquire", "select")
                 .AddTransition("select", "feedback")
-                .AddTransition("feedback", "scan_post")
-                .AddTransition("scan_post", "export")
+                .AddTransition("feedback", "export")
                 .AddTransition("export", "notify");
-            RecipeStepConfig.AddStandardSlots(regionRecipe, "scan_post", "export");
+            RecipeStepConfig.AddStandardSlots(regionRecipe, "export", "export");
             RegisterBuiltIn(regionRecipe, disabled);
 
             // 2. Interactive Window Capture
@@ -272,20 +278,16 @@ namespace Greenshot.Recipes
                 "Capture window",
                 "Interactively select a window on the screen")
                 .AddNode(RecipeStepConfig.CreateSource("acquire", CaptureSourceType.Window))
-                .AddNode(RecipeStepConfig.CreateProcessors("scan_pre", timing: ProcessorTiming.PreSelection).WithName("Scan Before Selection"))
                 .AddNode(RecipeStepConfig.CreateSelection("select", CaptureMode.Window))
                 .AddNode(RecipeStepConfig.CreateFeedback("feedback"))
-                .AddNode(RecipeStepConfig.CreateProcessors("scan_post", timing: ProcessorTiming.PostSelection).WithName("Process After Selection"))
                 .AddNode(RecipeStepConfig.CreateDestinations("export"))
                 .AddNode(RecipeStepConfig.CreateNotification("notify"));
             windowRecipe.Flow = new RecipeFlowConfig("acquire")
-                .AddTransition("acquire", "scan_pre")
-                .AddTransition("scan_pre", "select")
+                .AddTransition("acquire", "select")
                 .AddTransition("select", "feedback")
-                .AddTransition("feedback", "scan_post")
-                .AddTransition("scan_post", "export")
+                .AddTransition("feedback", "export")
                 .AddTransition("export", "notify");
-            RecipeStepConfig.AddStandardSlots(windowRecipe, "scan_post", "export");
+            RecipeStepConfig.AddStandardSlots(windowRecipe, "export", "export");
             RegisterBuiltIn(windowRecipe, disabled);
 
             // 3. Active Window Capture
@@ -295,15 +297,13 @@ namespace Greenshot.Recipes
                 "Directly capture the active window")
                 .AddNode(RecipeStepConfig.CreateSource("acquire", CaptureSourceType.ActiveWindow))
                 .AddNode(RecipeStepConfig.CreateFeedback("feedback"))
-                .AddNode(RecipeStepConfig.CreateProcessors("processors"))
                 .AddNode(RecipeStepConfig.CreateDestinations("export"))
                 .AddNode(RecipeStepConfig.CreateNotification("notify"));
             activeWindowRecipe.Flow = new RecipeFlowConfig("acquire")
                 .AddTransition("acquire", "feedback")
-                .AddTransition("feedback", "processors")
-                .AddTransition("processors", "export")
+                .AddTransition("feedback", "export")
                 .AddTransition("export", "notify");
-            RecipeStepConfig.AddStandardSlots(activeWindowRecipe, "processors", "export");
+            RecipeStepConfig.AddStandardSlots(activeWindowRecipe, "export", "export");
             RegisterBuiltIn(activeWindowRecipe, disabled);
 
             // 4. Full Screen Capture
@@ -313,15 +313,13 @@ namespace Greenshot.Recipes
                 "Capture the entire screen or monitor")
                 .AddNode(RecipeStepConfig.CreateSource("acquire", CaptureSourceType.FullScreen))
                 .AddNode(RecipeStepConfig.CreateFeedback("feedback"))
-                .AddNode(RecipeStepConfig.CreateProcessors("processors"))
                 .AddNode(RecipeStepConfig.CreateDestinations("export"))
                 .AddNode(RecipeStepConfig.CreateNotification("notify"));
             fullScreenRecipe.Flow = new RecipeFlowConfig("acquire")
                 .AddTransition("acquire", "feedback")
-                .AddTransition("feedback", "processors")
-                .AddTransition("processors", "export")
+                .AddTransition("feedback", "export")
                 .AddTransition("export", "notify");
-            RecipeStepConfig.AddStandardSlots(fullScreenRecipe, "processors", "export");
+            RecipeStepConfig.AddStandardSlots(fullScreenRecipe, "export", "export");
             RegisterBuiltIn(fullScreenRecipe, disabled);
 
             // 5. Last Region Capture
@@ -331,15 +329,13 @@ namespace Greenshot.Recipes
                 "Re-capture the coordinates of the previous region")
                 .AddNode(RecipeStepConfig.CreateSource("acquire", CaptureSourceType.LastRegion))
                 .AddNode(RecipeStepConfig.CreateFeedback("feedback"))
-                .AddNode(RecipeStepConfig.CreateProcessors("processors"))
                 .AddNode(RecipeStepConfig.CreateDestinations("export"))
                 .AddNode(RecipeStepConfig.CreateNotification("notify"));
             lastRegionRecipe.Flow = new RecipeFlowConfig("acquire")
                 .AddTransition("acquire", "feedback")
-                .AddTransition("feedback", "processors")
-                .AddTransition("processors", "export")
+                .AddTransition("feedback", "export")
                 .AddTransition("export", "notify");
-            RecipeStepConfig.AddStandardSlots(lastRegionRecipe, "processors", "export");
+            RecipeStepConfig.AddStandardSlots(lastRegionRecipe, "export", "export");
             RegisterBuiltIn(lastRegionRecipe, disabled);
 
             // 6. Clipboard Import
@@ -374,13 +370,11 @@ namespace Greenshot.Recipes
                 .AddNode(RecipeStepConfig.CreateSource("acquire", CaptureSourceType.TextOcr, captureMouse: false))
                 .AddNode(RecipeStepConfig.CreateSelection("select", CaptureMode.Text))
                 .AddNode(RecipeStepConfig.CreateFeedback("feedback"))
-                .AddNode(RecipeStepConfig.CreateProcessors("ocr", new[] { "Windows10OcrProcessor" }))
                 .AddNode(RecipeStepConfig.CreateClipboard("export", "TextOnly"));
             ocrRecipe.Flow = new RecipeFlowConfig("acquire")
                 .AddTransition("acquire", "select")
                 .AddTransition("select", "feedback")
-                .AddTransition("feedback", "ocr")
-                .AddTransition("ocr", "export");
+                .AddTransition("feedback", "export");
             RegisterBuiltIn(ocrRecipe, disabled);
 
             // The optional parts (browser extension, AI tools), Greenshot Light has none of them
@@ -422,6 +416,8 @@ namespace Greenshot.Recipes
         private void AddRecipeFileToConfig(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath)) return;
+            // Only a file which is used is watched, not one which wasn't approved or valid
+            SetupWatcherForFile(filePath);
             try
             {
                 var recipeConfig = RecipeConfigHelper.TryGetRecipeConfiguration();
@@ -515,7 +511,12 @@ namespace Greenshot.Recipes
         /// </summary>
         private bool _loadingConfiguredFiles;
 
-        private void LoadConfiguredRecipeFiles()
+        /// <summary>
+        /// Loads the recipe files of the configuration
+        /// </summary>
+        /// <param name="interactive">false: no window is shown, a file which needs the user (approval, errors) is only added to <paramref name="needsUser"/></param>
+        /// <param name="needsUser">Collects the files which couldn't be loaded without the user</param>
+        private void LoadConfiguredRecipeFiles(bool interactive, List<string> needsUser)
         {
             if (!RecipeFilesSupported)
             {
@@ -543,10 +544,14 @@ namespace Greenshot.Recipes
                     string fullPath = Path.GetFullPath(trimmed);
                     if (File.Exists(fullPath))
                     {
-                        var result = LoadRecipeFromFile(fullPath);
+                        var result = LoadRecipeFromFile(fullPath, interactive);
                         if (!result.IsValid)
                         {
                             Log.WarnFormat("Validation failed for configured recipe file '{0}': {1}", fullPath, string.Join("; ", result.Errors));
+                            if (!interactive)
+                            {
+                                needsUser.Add(fullPath);
+                            }
                         }
                     }
                     else
@@ -588,9 +593,11 @@ namespace Greenshot.Recipes
 
                         watcher.Changed += handler;
                         watcher.Created += handler;
+                        // Editors which save to a temporary file and rename it to the recipe file
                         watcher.Renamed += (s, e) =>
                         {
                             Log.InfoFormat("Detected recipe file rename on disk: '{0}' -> '{1}'.", e.OldFullPath, e.FullPath);
+                            ScheduleChangedFileCheck(e.FullPath);
                         };
 
                         _fileWatchers[dir] = watcher;
@@ -625,7 +632,8 @@ namespace Greenshot.Recipes
                             _changedFileTimers.Remove(filePath);
                         }
                     }
-                    CheckChangedFile(filePath);
+                    // On the UI thread, like every other change of the recipes: it can change the triggers (hotkeys, clipboard listener)
+                    UiDispatcher.Current.InvokeAsync(() => CheckChangedFile(filePath)).FireAndLog("Check a changed recipe file");
                 }, null, ChangedFileDelay, Timeout.Infinite);
             }
         }
@@ -664,7 +672,7 @@ namespace Greenshot.Recipes
                     DropExtension(extension.Id);
                 }
                 Log.InfoFormat("Recipe file '{0}' was changed outside Greenshot, asking for approval.", fullPath);
-                UiDispatcher.Current.InvokeAsync(() => LoadRecipeFromFile(fullPath, interactiveApproval: true, forceApprovalPrompt: false)).FireAndLog("Approval of a changed recipe file");
+                LoadRecipeFromFile(fullPath, interactiveApproval: true, forceApprovalPrompt: false);
             }
             catch (Exception ex)
             {
@@ -737,7 +745,6 @@ namespace Greenshot.Recipes
                 result.AddError($"Could not save the recipe: {ex.Message}");
                 return result;
             }
-            SetupWatcherForFile(fullPath);
 
             // Without an approval (an invalid recipe, saved as work in progress) none of its triggers is approved until it is loaded again
             RecipeApprovalPolicy.Apply(recipe, approval);
@@ -839,8 +846,6 @@ namespace Greenshot.Recipes
                 overallResult.AddError($"File not found: {filePath}");
                 return overallResult;
             }
-
-            SetupWatcherForFile(filePath);
 
             try
             {
@@ -1082,6 +1087,7 @@ namespace Greenshot.Recipes
 
         private void NotifyRecipesChanged()
         {
+            PruneFileWatchers();
             RecomposeRecipes();
             var triggerManager = SimpleServiceProvider.Current.GetInstance<Greenshot.Base.Recipes.Triggers.ITriggerManager>(isOptional: true) as TriggerManager ?? TriggerManager.Instance;
             triggerManager?.SyncRecipeTriggers(GetAllRecipes());
@@ -1315,6 +1321,42 @@ namespace Greenshot.Recipes
 
         public void ReloadRecipes()
         {
+            ReloadRecipes(interactive: true);
+        }
+
+        /// <summary>
+        /// Loads the recipes at startup without showing a window: the files which need the user (a changed file to approve, an error
+        /// to show) are returned, to be loaded with <see cref="LoadRecipeFilesInteractively"/> once Greenshot has started
+        /// </summary>
+        /// <returns>The recipe files which weren't loaded (or only partly)</returns>
+        public IReadOnlyList<string> LoadRecipesAtStartup()
+        {
+            return ReloadRecipes(interactive: false);
+        }
+
+        /// <summary>
+        /// Loads the recipe files again, asking the user where needed (approval, errors), e.g. the ones held back by <see cref="LoadRecipesAtStartup"/>
+        /// </summary>
+        public void LoadRecipeFilesInteractively(IEnumerable<string> filePaths)
+        {
+            _loadingConfiguredFiles = true;
+            try
+            {
+                foreach (var filePath in filePaths)
+                {
+                    LoadRecipeFromFile(filePath, interactiveApproval: true);
+                }
+            }
+            finally
+            {
+                _loadingConfiguredFiles = false;
+            }
+            NotifyRecipesChanged();
+        }
+
+        private IReadOnlyList<string> ReloadRecipes(bool interactive)
+        {
+            var needsUser = new List<string>();
             lock (_recipes)
             {
                 _recipes.Clear();
@@ -1331,16 +1373,93 @@ namespace Greenshot.Recipes
                     _recipes[kvp.Key] = restored;
                 }
             }
+            // The automatic steps from files are loaded again too: one removed from the configuration is gone, a built-in one it replaced comes back
+            lock (_extensions)
+            {
+                foreach (var extensionId in _extensions.Values.Where(e => !string.IsNullOrEmpty(e.FilePath)).Select(e => e.Id).ToList())
+                {
+                    _extensions.Remove(extensionId);
+                    if (_builtInExtensions.TryGetValue(extensionId, out var builtIn))
+                    {
+                        _extensions[extensionId] = builtIn;
+                    }
+                }
+            }
             _loadingConfiguredFiles = true;
             try
             {
-                LoadConfiguredRecipeFiles();
+                LoadConfiguredRecipeFiles(interactive, needsUser);
             }
             finally
             {
                 _loadingConfiguredFiles = false;
             }
+            ForgetApprovalsOfUnusedFiles();
             NotifyRecipesChanged();
+            return needsUser;
+        }
+
+        /// <summary>
+        /// The trust store keeps the approvals of the configured recipe files only, a file which is configured again is asked for again
+        /// </summary>
+        private static void ForgetApprovalsOfUnusedFiles()
+        {
+            // Without the recipe configuration (Recipe Editor plugin not loaded, recipes off) it isn't known which files are used
+            var recipeConfig = RecipeConfigHelper.TryGetRecipeConfiguration();
+            if (!RecipeFilesSupported || recipeConfig == null || !RecipeConfigHelper.IsRecipeFeatureEnabled(recipeConfig))
+            {
+                return;
+            }
+            var configuredFiles = new List<string>();
+            foreach (var path in (recipeConfig.RecipeFiles ?? string.Empty).Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                try
+                {
+                    configuredFiles.Add(Path.GetFullPath(path.Trim()));
+                }
+                catch (Exception ex)
+                {
+                    Log.Debug($"Ignoring the invalid recipe file path '{path}'.", ex);
+                }
+            }
+            RecipeTrustStore.KeepOnly(configuredFiles);
+        }
+
+        /// <summary>
+        /// Stops the watchers of folders which hold no recipe or automatic step file which is used
+        /// </summary>
+        private void PruneFileWatchers()
+        {
+            var usedDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            void AddDirectoryOf(string filePath)
+            {
+                if (string.IsNullOrEmpty(filePath)) return;
+                try
+                {
+                    usedDirectories.Add(Path.GetDirectoryName(Path.GetFullPath(filePath)));
+                }
+                catch (Exception ex)
+                {
+                    Log.Debug($"Ignoring the invalid recipe file path '{filePath}'.", ex);
+                }
+            }
+            foreach (var recipe in GetAllRecipes())
+            {
+                AddDirectoryOf(recipe.FilePath);
+            }
+            foreach (var extension in GetAllExtensions())
+            {
+                AddDirectoryOf(extension.FilePath);
+            }
+            lock (_fileWatchers)
+            {
+                foreach (var directory in _fileWatchers.Keys.Where(directory => !usedDirectories.Contains(directory)).ToList())
+                {
+                    _fileWatchers[directory].Dispose();
+                    _fileWatchers.Remove(directory);
+                    Log.DebugFormat("Stopped watching '{0}' for recipe file changes.", directory);
+                }
+            }
         }
 
         public IReadOnlyList<CaptureRecipe> GetAllRecipes()

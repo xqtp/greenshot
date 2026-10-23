@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -83,8 +83,7 @@ namespace Greenshot.Recipes.ViewModels
                 item.DiagnosticHint = Texts.Recipe.ApprovalHintIdName;
             }
             // Check for JSON parser / deserializer syntax exceptions
-            else if (rawError.IndexOf("JsonReaderException", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                     rawError.IndexOf("JsonSerializationException", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            else if (rawError.IndexOf("JsonException", StringComparison.OrdinalIgnoreCase) >= 0 ||
                      (rawError.IndexOf("line", StringComparison.OrdinalIgnoreCase) >= 0 && rawError.IndexOf("position", StringComparison.OrdinalIgnoreCase) >= 0))
             {
                 item.DiagnosticHint = Texts.Recipe.ApprovalHintJsonSyntax;

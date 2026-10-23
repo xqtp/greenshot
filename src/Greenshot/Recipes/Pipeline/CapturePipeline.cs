@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -103,7 +103,7 @@ namespace Greenshot.Recipes.Pipeline
             _stepRegistry.Register<SetVariableStep>(config => new SetVariableStep(config));
             _stepRegistry.Register<ConditionalStep>(config => new ConditionalStep(config));
             _stepRegistry.Register<ImmediateFeedbackStep>(config => new ImmediateFeedbackStep(config));
-            _stepRegistry.Register<ProcessorExecutionStep>(config => new ProcessorExecutionStep(config));
+            _stepRegistry.Register<OcrStep>(config => new OcrStep(config));
             _stepRegistry.Register<DestinationExportStep>(config => new DestinationExportStep(config, _dispatcher));
             _stepRegistry.Register<DestinationExportStep>(WellKnownStepTypes.SaveFile, "Save to File", "Saves the capture to a file without asking.",
                 config => new DestinationExportStep(config, _dispatcher));

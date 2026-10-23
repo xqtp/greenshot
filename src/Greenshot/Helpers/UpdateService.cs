@@ -6,7 +6,7 @@
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 1 of the License, or
+// the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
@@ -44,6 +44,8 @@ namespace Greenshot.Helpers
         private static readonly ICoreConfiguration CoreConfig = IniConfigRegistry.GetSection<ICoreConfiguration>();
         private static readonly Uri UpdateFeed = new Uri("https://getgreenshot.org/update-feed.json");
         private static readonly Uri Downloads = new Uri("https://getgreenshot.org/downloads");
+        // The longest single wait of the background loop, Task.Delay throws above about 24.8 days
+        private static readonly TimeSpan MaxWait = TimeSpan.FromDays(1);
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         /// <summary>
@@ -229,8 +231,10 @@ namespace Greenshot.Helpers
 
                             try
                             {
-                                // Use duration to get an absolute time and can't be negative.
-                                await Task.Delay(interval.Duration(), cancellationToken).ConfigureAwait(false);
+                                // Use duration to get an absolute time and can't be negative. At most a day: Task.Delay takes up to
+                                // about 24.8 days, the interval can be 365 days; the next round checks again whether the check is due.
+                                var wait = interval.Duration();
+                                await Task.Delay(wait > MaxWait ? MaxWait : wait, cancellationToken).ConfigureAwait(false);
                             }
                             catch (TaskCanceledException)
                             {

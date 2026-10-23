@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -135,6 +135,11 @@ namespace Greenshot.Helpers
         private static readonly HashSet<string> Flags = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "--no-run", "--restore", "--autostart", "-Embedding", "--help", "-h", "-?" };
 
         /// <summary>
+        /// Flags which need no System.CommandLine, spelled exactly as it accepts them (it is case-sensitive)
+        /// </summary>
+        private static readonly HashSet<string> SimpleFlags = new HashSet<string>(StringComparer.Ordinal) { "--restore", "--autostart", "-Embedding" };
+
+        /// <summary>
         /// Parses the given command line arguments.
         /// </summary>
         /// <param name="args">The command line arguments passed to the application.</param>
@@ -149,6 +154,15 @@ namespace Greenshot.Helpers
             if (args == null || args.Length == 0)
             {
                 return new CommandLineOptions();
+            }
+            // The same for the autostart (--autostart) and a click on a toast (-Embedding), which only pass these flags
+            if (args.All(SimpleFlags.Contains))
+            {
+                return new CommandLineOptions
+                {
+                    Restore = args.Contains("--restore"),
+                    Autostart = args.Contains("--autostart")
+                };
             }
 
             return ParseArguments(args);
@@ -246,7 +260,7 @@ namespace Greenshot.Helpers
                               "The command has the same syntax as for greenshot-cli.exe (see greenshot-cli.exe --help), e.g.\n" +
                               "  Greenshot.exe image.png            open a file with the recipes of its OpenFile triggers\n" +
                               "  Greenshot.exe --recipe ocr         run a recipe\n" +
-                              "  Greenshot.exe --reload / --exit    reload the configuration / exit Greenshot\n" +
+                              "  Greenshot.exe --reload / --exit    apply a changed greenshot-fixed.ini / exit Greenshot\n" +
                               "The command is sent to the running Greenshot; if none is running, Greenshot starts and runs it.\n" +
                               "Unlike greenshot-cli.exe, Greenshot.exe shows no output of the command."
             };

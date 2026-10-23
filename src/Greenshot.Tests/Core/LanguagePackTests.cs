@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -53,12 +53,11 @@ namespace Greenshot.Tests.Core
             var assemblies = new[]
             {
                 typeof(ICoreLanguage).Assembly,
+                typeof(Greenshot.Plugin.Atlassian.AtlassianPlugin).Assembly,
                 typeof(Greenshot.Plugin.Box.IBoxLanguage).Assembly,
-                typeof(Greenshot.Plugin.Confluence.IConfluenceLanguage).Assembly,
                 typeof(Greenshot.Plugin.CustomUploader.ICustomUploaderLanguage).Assembly,
                 typeof(Greenshot.Plugin.Dropbox.IDropboxLanguage).Assembly,
                 typeof(Greenshot.Plugin.ExternalCommand.IExternalCommandLanguage).Assembly,
-                typeof(Greenshot.Plugin.Jira.IJiraLanguage).Assembly,
                 typeof(Greenshot.Plugin.Office.IOfficeLanguage).Assembly,
                 typeof(Greenshot.Plugin.Pdf.IPdfLanguage).Assembly,
                 typeof(Greenshot.Plugin.RecipeEditor.IRecipeEditorLanguage).Assembly,

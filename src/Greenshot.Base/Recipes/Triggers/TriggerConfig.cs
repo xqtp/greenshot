@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -20,9 +20,9 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 
 namespace Greenshot.Base.Recipes.Triggers
 {
@@ -107,12 +107,12 @@ namespace Greenshot.Base.Recipes.Triggers
                     return typedVal;
                 }
 
-                if (rawValue is JToken jToken)
+                if (rawValue is IDictionary<string, object> || rawValue is IEnumerable && rawValue is not string)
                 {
-                    return jToken.ToObject<T>();
+                    return RecipeSerializer.ConvertValue<T>(rawValue);
                 }
 
-                Type targetType = typeof(T);
+                Type targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
                 if (targetType.IsEnum)
                 {
                     if (rawValue is string strVal)

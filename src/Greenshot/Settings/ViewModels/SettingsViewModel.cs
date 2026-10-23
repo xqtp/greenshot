@@ -7,7 +7,7 @@
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -417,7 +417,7 @@ namespace Greenshot.Settings.ViewModels
         {
             Destinations = new ObservableCollection<DestinationViewModel>();
             
-            var allDestinations = DestinationHelper.GetAllDestinations().ToList();
+            var allDestinations = GetListedDestinations();
             foreach (IDestination destination in allDestinations)
             {
                 // Skip picker - it's handled separately
@@ -440,11 +440,26 @@ namespace Greenshot.Settings.ViewModels
                 var destItem = new DestinationViewModel
                 {
                     Destination = destination,
+                    Designation = destination.Designation,
                     Description = description,
+                    // Before IsSelected: switching it off unselects, an output destination which is off stays in the settings
+                    IsAllowed = ConfigurationRestrictions.IsDestinationAllowed(CoreConfiguration, destination.Designation),
+                    CanChangeAllowed = !AreDestinationExclusionsFixed && !ConfigurationRestrictions.IsDestinationBlockedByAdministrator(CoreConfiguration, destination.Designation),
                     IsSelected = CoreConfiguration.OutputDestinations != null && CoreConfiguration.OutputDestinations.Contains(destination.Designation)
                 };
                 
                 Destinations.Add(destItem);
+            }
+
+            // Names in the settings which aren't registered, e.g. of a plugin which isn't installed
+            foreach (var designation in ConfigurationRestrictions.Names(CoreConfiguration.ExcludeDestinations)
+                         .Concat(ConfigurationRestrictions.Names(CoreConfiguration.BlockedDestinations))
+                         .Concat(ConfigurationRestrictions.Names(CoreConfiguration.AllowedDestinations))
+                         .Distinct(StringComparer.OrdinalIgnoreCase)
+                         .Where(designation => designation != nameof(WellKnownDestinations.Picker))
+                         .ToList())
+            {
+                AddUnregisteredDestination(designation);
             }
 
             // Resolve the destination icons asynchronously, the window opens right away
@@ -460,7 +475,10 @@ namespace Greenshot.Settings.ViewModels
             {
                 try
                 {
-                    destItem.IconSource = await DestinationIcons.GetImageSourceAsync(destItem.Destination?.Descriptor?.IconKey).ConfigureAwait(true);
+                    if (destItem.Destination != null)
+                    {
+                        destItem.IconSource = await DestinationIcons.GetImageSourceAsync(destItem.Destination.Descriptor?.IconKey).ConfigureAwait(true);
+                    }
                 }
                 catch (Exception)
                 {

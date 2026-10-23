@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -69,7 +69,7 @@ namespace Greenshot.Mcp
 
         [McpServerTool(Name = "get_recipe_catalog", Title = "Get the recipe catalog", ReadOnly = true, Idempotent = true, OpenWorld = false)]
         [Description("Returns what recipes can use in this Greenshot: the trigger types, the step types with their parameters, the " +
-                     "destinations (uploads=true sends the capture to the internet), the processors, the user's recipes (id, name, triggers), the slots " +
+                     "destinations (uploads=true sends the capture to the internet), the user's recipes (id, name, triggers), the slots " +
                      "and the automatic steps (steps Greenshot adds to other recipes, like a border on every capture), and the option types. " +
                      "With recipe_id it returns the JSON of that recipe or automatic step instead, to change it with update_recipe.")]
         public static Task<CallToolResult> GetRecipeCatalogAsync(McpServer server,

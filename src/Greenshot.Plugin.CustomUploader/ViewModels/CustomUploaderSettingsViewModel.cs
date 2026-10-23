@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -29,6 +29,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -36,7 +37,6 @@ using Greenshot.Base.Core;
 using Greenshot.Base.Languages;
 using Greenshot.Plugin.CustomUploader.Sxcu;
 using log4net;
-using Newtonsoft.Json;
 
 namespace Greenshot.Plugin.CustomUploader.ViewModels;
 
@@ -220,7 +220,7 @@ public sealed class CustomUploaderSettingsViewModel : INotifyPropertyChanged
     /// <exception cref="UploaderFileException">the values can't be used, the message says why</exception>
     internal static UploaderDefinition WithValues(UploaderDefinition definition, IEnumerable<UploaderValue> values)
     {
-        var copy = JsonConvert.DeserializeObject<UploaderDefinition>(JsonConvert.SerializeObject(definition));
+        var copy = JsonSerializer.Deserialize<UploaderDefinition>(JsonSerializer.Serialize(definition, UploaderFile.JsonOptions), UploaderFile.JsonOptions);
         foreach (var value in values)
         {
             string text = value.Value ?? string.Empty;
@@ -241,7 +241,7 @@ public sealed class CustomUploaderSettingsViewModel : INotifyPropertyChanged
             }
         }
 
-        return UploaderFile.Read(JsonConvert.SerializeObject(copy));
+        return UploaderFile.Read(JsonSerializer.Serialize(copy, UploaderFile.JsonOptions));
     }
 
     /// <summary>

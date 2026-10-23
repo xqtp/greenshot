@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -95,8 +95,7 @@ namespace Greenshot.Recipes.Views
             string message,
             IEnumerable<PromptChoice> choices,
             System.Drawing.Image previewImage = null,
-            int timeoutSeconds = 0,
-            string defaultChoice = null)
+            int timeoutSeconds = 0)
         {
             InitializeComponent();
             DataContext = this;
@@ -180,11 +179,6 @@ namespace Greenshot.Recipes.Views
                 _cancelChoiceKey = ActionButtons.FirstOrDefault(b => b.IsCancel)?.Key ??
                                    ActionButtons.FirstOrDefault(b => string.Equals(b.Key, "No", StringComparison.OrdinalIgnoreCase))?.Key ??
                                    ActionButtons.LastOrDefault()?.Key ?? "No";
-            }
-
-            if (!string.IsNullOrWhiteSpace(defaultChoice))
-            {
-                _defaultChoiceKey = defaultChoice;
             }
 
             if (timeoutSeconds > 0)

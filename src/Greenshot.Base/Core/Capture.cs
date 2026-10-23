@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -229,15 +229,8 @@ namespace Greenshot.Base.Core
             // TODO: Enable when the elements are usable again.
             // MoveElements(-cropRectangle.Location.X, -cropRectangle.Location.Y);
 
-            // Offset all detected features
-            lock (CaptureDetails.Features)
-            {
-                CaptureDetails.CropOffset = CaptureDetails.CropOffset.Offset(cropRectangle.Location.X, cropRectangle.Location.Y);
-                foreach (var feature in CaptureDetails.Features)
-                {
-                    feature.Offset(-cropRectangle.Location.X, -cropRectangle.Location.Y);
-                }
-            }
+            // What was found outside the selection is no longer in the capture
+            CaptureDetails.CropFeatures(cropRectangle);
 
             return true;
         }

@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -20,7 +20,7 @@
  */
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Greenshot.Plugin.CustomUploader.Sxcu;
 
@@ -42,7 +42,7 @@ internal sealed class UploaderDefinition
     public string RequestMethod { get; set; }
 
     /// <summary>The name of <see cref="RequestMethod"/> in files of ShareX before 13.0</summary>
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string RequestType { get; set; }
 
     public string RequestURL { get; set; }

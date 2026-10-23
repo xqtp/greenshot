@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -120,11 +120,6 @@ namespace Greenshot.Plugin.ExternalCommand
         /// Edit
         /// </summary>
         string SettingsEdit { get; }
-
-        /// <summary>
-        /// General settings
-        /// </summary>
-        string SettingsGeneralTitle { get; }
 
         /// <summary>
         /// Select a command to edit details, or click New to add one.

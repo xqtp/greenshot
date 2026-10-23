@@ -7,7 +7,7 @@
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -502,15 +502,7 @@ namespace Greenshot.Plugin.Zxing.Views
                     {
                         return string.Empty;
                     }
-                    string formattedAmount = string.Empty;
-                    if (double.TryParse(TxtEpcAmount.Text, out double amt))
-                    {
-                        formattedAmount = string.Format(CultureInfo.InvariantCulture, "EUR{0:F2}", amt);
-                    }
-                    else if (!string.IsNullOrEmpty(TxtEpcAmount.Text))
-                    {
-                        formattedAmount = TxtEpcAmount.Text.StartsWith("EUR", StringComparison.OrdinalIgnoreCase) ? TxtEpcAmount.Text : $"EUR{TxtEpcAmount.Text}";
-                    }
+                    string formattedAmount = ZxingModel.FormatEpcAmount(TxtEpcAmount.Text);
 
                     return "BCD\n" +
                            "002\n" +

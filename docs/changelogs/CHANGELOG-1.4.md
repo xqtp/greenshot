@@ -125,6 +125,7 @@ Continuous builds are automatically created for every commit to the `main` branc
 **Confluence Plugin** (#869)
 - Replaced deprecated SOAP API with REST API
 - Modern API integration for Confluence
+- Works with Confluence Cloud and Data Center
 - By @Copilot
 
 **Dropbox Plugin** (#885)
@@ -134,6 +135,9 @@ Continuous builds are automatically created for every commit to the `main` branc
 
 **JIRA Plugin** (#871)
 - Various fixes to improve JIRA plugin functionality
+- The issues of a favourite filter show again on Jira Cloud (Atlassian removed the old search)
+- Jira and Confluence: a new sign-in, on Cloud with your e-mail address and an API token, on Data Center also with a personal access token; the plugin settings show the account, test the connection and sign out
+- Jira and Confluence are one plug-in now, signing in to one also signs in to the other on the same Atlassian site
 - By @Lakritzator
 
 **OneNote Plugin** (#883)
@@ -153,6 +157,11 @@ Continuous builds are automatically created for every commit to the `main` branc
 - Fixed Windows Share functionality to work with Windows 10 & 11
 - Renamed OCR feature for clarity
 - By @danrhodes
+
+**Plugin Start**
+- The tray icon is there before the plugins start, they no longer hold up the start of Greenshot
+- A plugin which fails to start is switched off completely, it no longer leaves destinations behind which don't work
+- The "Configure ..." entries of the plugins are no longer in the tray menu, the plugin settings are under Settings > Plugins
 
 #### 🖼️ Image Format Support
 
@@ -268,6 +277,13 @@ Continuous builds are automatically created for every commit to the `main` branc
 
 #### ⚙️ Configuration & Settings
 
+**Switching plugins and destinations on or off**
+- Plugins and destinations can be switched on or off in the settings, without typing their names into greenshot.ini
+- Administrators can block plugins and destinations, or allow only some and block everything else, with greenshot-fixed.ini, and decide if users may switch off more; the settings show the lines to copy
+- A destination of a plugin which isn't loaded is no longer removed from the settings
+- A plugin in a folder you can change (e.g. the portable version) which isn't signed by the makers of Greenshot isn't loaded until you allow it
+- The plugin list in the settings shows who signed each plugin
+
 **MAPI Client Detection** (#861)
 - Fixed MAPI Client detection on HKCU registry
 - By @htcfreek
@@ -282,6 +298,9 @@ Continuous builds are automatically created for every commit to the `main` branc
 - Folder browser now gracefully falls back to My Documents when the configured path is unavailable, too long, or doesn't exist
 - Prevents `System.InvalidOperationException: Unable to retrieve the root folder` error
 - By @Copilot
+
+**External Commands**
+- An external command whose program isn't found when Greenshot starts (e.g. on a USB stick or a network drive) is no longer deleted from the settings, it is only left out of the menu until Greenshot starts with the program available again
 
 **Plugin Configuration** (#733)
 - Improved plugin configuration handling
@@ -324,6 +343,10 @@ Continuous builds are automatically created for every commit to the `main` branc
 **Print Footer** (#820, #804)
 - Use Greenshot's UI language for date formatting in print footer
 - By @tsiakoulias
+
+**Language**
+- The first start uses the language of Windows instead of asking, the settings change it
+- `--reload` also applies a language set in greenshot-fixed.ini
 
 #### 🔒 Security Improvements
 
@@ -518,7 +541,7 @@ If you have scripts or shortcuts that use Greenshot's command line arguments, yo
 |--------------|--------------|-------------|
 | `/help`, `/h`, `/?` | `--help`, `-h` | Show help information |
 | `/exit` | `--exit` | Close running Greenshot instance |
-| `/reload` | `--reload` | Reload configuration |
+| `/reload` | `--reload` | Apply a changed greenshot-fixed.ini (greenshot.ini is locked while Greenshot runs) |
 | `/norun` | `--no-run` | Start in configuration mode |
 | `/language [code]` | `--language <language-code>` | Set interface language |
 | `/inidirectory [path]` | `--ini-directory <directory>` | Set configuration directory |

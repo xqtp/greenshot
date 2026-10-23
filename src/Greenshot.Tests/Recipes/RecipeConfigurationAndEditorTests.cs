@@ -7,7 +7,7 @@
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -21,6 +21,7 @@
 
 using Greenshot.Base.Core;
 using Greenshot.Base.Recipes;
+using Greenshot.Base.Recipes.Contracts;
 using Greenshot.Base.Recipes.Pipeline;
 using Greenshot.Plugin.RecipeEditor;
 using Greenshot.Recipes;
@@ -49,8 +50,47 @@ namespace Greenshot.Tests.Recipes
             {
                 RegisterDrawablesCalled = true;
             }
+        }
 
-            public string GetDrawableSchemaJson() => null;
+        private class StepTypeProvider : IRecipeStepProvider
+        {
+            private readonly string _stepType;
+
+            public StepTypeProvider(string stepType)
+            {
+                _stepType = stepType;
+            }
+
+            public void RegisterSteps(IStepRegistry registry)
+            {
+                registry.Register(new StepContract(_stepType), config => null);
+            }
+        }
+
+        private class CountingStepProvider : IRecipeStepProvider
+        {
+            public int Calls { get; private set; }
+
+            public void RegisterSteps(IStepRegistry registry)
+            {
+                Calls++;
+            }
+        }
+
+        private class DrawableTypeProvider : IRecipeDrawableProvider
+        {
+            private readonly string _drawableType;
+
+            public DrawableTypeProvider(string drawableType)
+            {
+                _drawableType = drawableType;
+            }
+
+            public void RegisterDrawables(IRecipeDrawableRegistry registry)
+            {
+                registry.RegisterDrawableFactory(_drawableType, (surface, parameters, context) => null);
+                registry.RegisterDrawableConfigurator(_drawableType, (parameters, owner) => true);
+            }
         }
 
         public RecipeConfigurationAndEditorTests()
@@ -106,6 +146,56 @@ namespace Greenshot.Tests.Recipes
         }
 
         [Fact]
+        public void StepRegistry_UnregisterProvider_RemovesOnlyItsStepTypes()
+        {
+            IniConfigHelper.EnsureSection<IRecipeConfiguration>(() => new RecipeConfigurationImpl()).Enabled = true;
+            var registry = new StepRegistry();
+            var disabledProvider = new StepTypeProvider("DisabledPluginStep");
+            registry.RegisterProvider(disabledProvider);
+            registry.RegisterProvider(new StepTypeProvider("OtherPluginStep"));
+            registry.Register(new StepContract("CoreStep"), config => null);
+
+            registry.UnregisterProvider(disabledProvider);
+
+            Assert.False(registry.IsRegistered("DisabledPluginStep"));
+            Assert.True(registry.IsRegistered("OtherPluginStep"));
+            Assert.True(registry.IsRegistered("CoreStep"));
+        }
+
+        [Fact]
+        public void StepRegistry_RegistersAProviderOnce_UntilItIsUnregistered()
+        {
+            IniConfigHelper.EnsureSection<IRecipeConfiguration>(() => new RecipeConfigurationImpl()).Enabled = true;
+            var registry = new StepRegistry();
+            var provider = new CountingStepProvider();
+
+            registry.RegisterProvider(provider);
+            registry.RegisterProvider(provider);
+            Assert.Equal(1, provider.Calls);
+
+            registry.UnregisterProvider(provider);
+            registry.RegisterProvider(provider);
+            Assert.Equal(2, provider.Calls);
+        }
+
+        [Fact]
+        public void RecipeDrawableRegistry_UnregisterProvider_RemovesOnlyItsDrawableTypes()
+        {
+            IniConfigHelper.EnsureSection<IRecipeConfiguration>(() => new RecipeConfigurationImpl()).Enabled = true;
+            var registry = new RecipeDrawableRegistry();
+            var disabledProvider = new DrawableTypeProvider("DisabledPluginDrawable");
+            registry.RegisterProvider(disabledProvider);
+            registry.RegisterProvider(new DrawableTypeProvider("OtherPluginDrawable"));
+
+            registry.UnregisterProvider(disabledProvider);
+
+            Assert.False(registry.IsRegistered("DisabledPluginDrawable"));
+            Assert.False(registry.CanConfigureDrawable("DisabledPluginDrawable"));
+            Assert.True(registry.IsRegistered("OtherPluginDrawable"));
+            Assert.True(registry.CanConfigureDrawable("OtherPluginDrawable"));
+        }
+
+        [Fact]
         public void BuiltInRecipes_CanExecuteWithoutRecipeEditorPlugin()
         {
             var manager = new RecipeManager();
@@ -145,29 +235,46 @@ namespace Greenshot.Tests.Recipes
         }
 
         [Fact]
-        public void StepNodeViewModel_StepErrorHandling_UpdatesConfigCorrectly()
+        public void StepNodeViewModel_OnError_IsTheErrorTransitionOfTheStep()
         {
-            var config = RecipeStepConfig.CreateClipboard("clipboard_step");
-            var vm = new Greenshot.Plugin.RecipeEditor.ViewModels.StepNodeViewModel(config, new System.Windows.Point(0, 0));
+            var editorVm = new Greenshot.Plugin.RecipeEditor.ViewModels.RecipeEditorViewModel(RecipeManager.Instance);
+            try
+            {
+                editorVm.NewRecipe();
+                var vm = editorVm.Nodes.First(n => n.Id == "export");
+                Assert.Equal("Default", vm.OnErrorAction);
+                Assert.Empty(editorVm.ActiveRecipe.Flow.ErrorTransitions);
 
-            // Default
-            Assert.Equal("Default", vm.OnErrorAction);
-            Assert.Null(config.OnErrorNodeId);
-            Assert.Null(config.OnErrorRecipeId);
+                // A step: one error transition for any error
+                vm.OnErrorAction = "Step";
+                vm.OnErrorNodeId = "feedback";
+                var transition = Assert.Single(editorVm.ActiveRecipe.Flow.ErrorTransitions);
+                Assert.Equal(("export", "feedback", (string)null, "*"), (transition.From, transition.To, transition.Recipe, transition.OnError));
+                Assert.True(vm.IsOnErrorStep);
+                Assert.Single(editorVm.ErrorTransitions);
 
-            // Set to Step
-            vm.OnErrorAction = "Step";
-            vm.OnErrorNodeId = "dyn_dest";
-            Assert.Equal("dyn_dest", config.OnErrorNodeId);
-            Assert.Null(config.OnErrorRecipeId);
-            Assert.True(vm.IsOnErrorStep);
+                // A recipe: the same transition, now to the recipe
+                vm.OnErrorAction = "Recipe";
+                vm.OnErrorRecipeId = "rec_recovery";
+                transition = Assert.Single(editorVm.ActiveRecipe.Flow.ErrorTransitions);
+                Assert.Equal(("export", (string)null, "rec_recovery"), (transition.From, transition.To, transition.Recipe));
+                Assert.True(vm.IsOnErrorRecipe);
+                Assert.Null(vm.OnErrorNodeId);
 
-            // Set to Recipe
-            vm.OnErrorAction = "Recipe";
-            vm.OnErrorRecipeId = "rec_recovery";
-            Assert.Equal("rec_recovery", config.OnErrorRecipeId);
-            Assert.Null(config.OnErrorNodeId);
-            Assert.True(vm.IsOnErrorRecipe);
+                // Changed in the list of error transitions: the step shows it
+                editorVm.ErrorTransitions[0].TargetType = "Step";
+                editorVm.ErrorTransitions[0].ToNodeId = "acquire";
+                Assert.Equal("acquire", vm.OnErrorNodeId);
+
+                // Default removes it
+                vm.OnErrorAction = "Default";
+                Assert.Empty(editorVm.ActiveRecipe.Flow.ErrorTransitions);
+                Assert.Empty(editorVm.ErrorTransitions);
+            }
+            finally
+            {
+                editorVm.Detach();
+            }
         }
 
         [Fact]
@@ -230,10 +337,10 @@ namespace Greenshot.Tests.Recipes
 
             Assert.NotNull(editorVm.ActiveRecipe.Flow.ErrorTransitions);
             Assert.Single(editorVm.ActiveRecipe.Flow.ErrorTransitions);
-            var savedTransition = editorVm.ActiveRecipe.Flow.ErrorTransitions[0];
+            var savedTransition = editorVm.ActiveRecipe.Flow.ErrorTransitions.First();
             Assert.Equal("acquire", savedTransition.From);
             Assert.Equal(dynStep.Id, savedTransition.To);
-            Assert.Equal("ClipboardException", savedTransition.ErrorType);
+            Assert.Equal("ClipboardException", savedTransition.OnError);
         }
     }
 }

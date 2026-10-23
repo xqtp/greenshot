@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -24,11 +24,11 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Greenshot.Base.Http;
 using Greenshot.Base.Interfaces;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Greenshot.Tests.Http
@@ -231,7 +231,7 @@ namespace Greenshot.Tests.Http
 
         private sealed class Feed
         {
-            [JsonProperty("release")] public string Release { get; set; }
+            [JsonPropertyName("release")] public string Release { get; set; }
         }
     }
 }

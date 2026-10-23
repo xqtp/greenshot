@@ -7,7 +7,7 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -32,21 +32,12 @@ namespace Greenshot.Base.Http
 {
     /// <summary>
     /// The certificate rules of Greenshot: the platform validation, plus the hosts and thumbprints the user allowed in the core configuration.
-    /// Used by the HttpService and, via <see cref="ServicePointManager"/>, by HttpWebRequest based libraries (Jira).
+    /// Used by the HttpService.
     /// </summary>
     public static class CertificateValidator
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(CertificateValidator));
-        // Looked up on use: RegisterGlobally runs before the configuration is loaded
         private static ICoreConfiguration Config => IniConfigRegistry.GetSection<ICoreConfiguration>();
-
-        /// <summary>
-        /// Use these rules for everything that goes through ServicePointManager (HttpWebRequest), called once at startup.
-        /// </summary>
-        public static void RegisterGlobally()
-        {
-            ServicePointManager.ServerCertificateValidationCallback = Validate;
-        }
 
         /// <summary>
         /// Validates server SSL/TLS certificates according to standard rules and configured exceptions in the Core configuration.

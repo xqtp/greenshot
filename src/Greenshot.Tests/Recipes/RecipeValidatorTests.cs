@@ -7,7 +7,7 @@
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 1 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -331,7 +331,7 @@ namespace Greenshot.Tests.Recipes
         {
             // The test brings its own recipe file instead of depending on example files in the repository
             const string recipeJson = @"{
-  ""version"": ""1.0"",
+  ""version"": ""2.0"",
   ""id"": ""recipe_record_active_window"",
   ""name"": ""Record Active Window"",
   ""description"": ""Records the active window as video, started with the Pause key"",
@@ -341,7 +341,7 @@ namespace Greenshot.Tests.Recipes
       ""name"": ""Pause Hotkey"",
       ""enabled"": true,
       ""parameters"": {
-        ""hotkey"": ""Pause""
+        ""Hotkey"": ""Pause""
       }
     }
   ],
@@ -353,7 +353,7 @@ namespace Greenshot.Tests.Recipes
       ""name"": ""Record Active Window"",
       ""enabled"": true,
       ""parameters"": {
-        ""sourceType"": ""ActiveWindow""
+        ""SourceType"": ""ActiveWindow""
       }
     }
   ],
