@@ -2322,6 +2322,32 @@ namespace Greenshot.Plugin.RecipeEditor
         string HintOptions { get; }
 
         /// <summary>
+        /// TRANSLATIONS
+        /// </summary>
+        string HeaderTranslations { get; }
+
+        /// <summary>
+        /// Translate the texts of this recipe into other languages. ...
+        /// </summary>
+        string HintTranslations { get; }
+
+        /// <summary>
+        /// Add a language
+        /// </summary>
+        string AddTranslationLanguage { get; }
+
+        /// <summary>
+        /// Translations shown below
+        /// </summary>
+        string TranslationLanguageShown { get; }
+
+        /// <summary>
+        /// Remove this language and its texts
+        /// </summary>
+        string TipRemoveLanguage { get; }
+
+
+        /// <summary>
         /// Key
         /// </summary>
         string OptionKey { get; }
@@ -3310,6 +3336,21 @@ namespace Greenshot.Plugin.RecipeEditor
         /// Hotkey: {0}
         /// </summary>
         string TriggerTitleHotkey { get; }
+
+        /// <summary>
+        /// {0} (from the general settings)
+        /// </summary>
+        string TriggerHotkeyFromSettings { get; }
+
+        /// <summary>
+        /// {0} (from the option "{1}")
+        /// </summary>
+        string TriggerHotkeyFromOption { get; }
+
+        /// <summary>
+        /// Use a fixed hotkey
+        /// </summary>
+        string TriggerHotkeyUseFixed { get; }
 
         /// <summary>
         /// Context Menu: {0}

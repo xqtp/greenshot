@@ -70,6 +70,9 @@ namespace Greenshot.Recipes.Views
         public string RecipeVersion { get; set; }
         public string RecipeDescription { get; set; }
         public string RecipeId { get; set; }
+        public string RecipeAuthor { get; set; }
+        public bool HasRecipeAuthor => !string.IsNullOrEmpty(RecipeAuthor);
+        public string RecipeCopyright { get; set; }
         public string FilePath { get; set; }
         public string FileHash { get; set; }
 
@@ -244,10 +247,12 @@ namespace Greenshot.Recipes.Views
             _content = request.Content;
             InitializeComponent();
 
-            RecipeName = recipe?.Name ?? (File.Exists(filePath) ? Path.GetFileName(filePath) : Texts.Recipe.ApprovalUnnamedRecipe);
+            RecipeName = recipe?.DisplayName ?? (File.Exists(filePath) ? Path.GetFileName(filePath) : Texts.Recipe.ApprovalUnnamedRecipe);
             RecipeVersion = string.IsNullOrWhiteSpace(recipe?.Version) ? "" : $"v{recipe.Version}";
             RecipeDescription = string.IsNullOrWhiteSpace(recipe?.Description) ? (validationResult != null && !validationResult.IsValid ? Texts.Recipe.ApprovalFailedValidation : Texts.Recipe.ApprovalNoDescription) : recipe.Description;
             RecipeId = recipe?.Id ?? Texts.Recipe.ApprovalUnknown;
+            RecipeAuthor = DescribeAuthor(recipe);
+            RecipeCopyright = string.IsNullOrWhiteSpace(recipe?.Copyright) ? null : recipe.Copyright;
             FilePath = filePath ?? Texts.Recipe.ApprovalUnknownPath;
             // The hash of the content that was read once, never of the file as it is now
             FileHash = request.ContentHash ?? Texts.Recipe.ApprovalUnknown;
@@ -392,7 +397,7 @@ namespace Greenshot.Recipes.Views
             }
             if (request.ReplacedRecipe != null)
             {
-                ChangesTitle = string.Format(request.ReplacesBuiltIn ? Texts.Recipe.ApprovalChangesReplacesBuiltin : Texts.Recipe.ApprovalChangesRecipe, request.ReplacedRecipe.Name);
+                ChangesTitle = string.Format(request.ReplacesBuiltIn ? Texts.Recipe.ApprovalChangesReplacesBuiltin : Texts.Recipe.ApprovalChangesRecipe, request.ReplacedRecipe.DisplayName);
             }
             else if (ApprovalMode == RecipeApprovalMode.Modified)
             {
@@ -525,6 +530,20 @@ namespace Greenshot.Recipes.Views
             }
         }
 
+        /// <summary>
+        /// The authors of the recipe as written in it, with its license, e.g. "Jane Doe, John Roe (MIT)"; null without authors
+        /// </summary>
+        internal static string DescribeAuthor(FlowDefinition definition)
+        {
+            var names = definition?.Authors?.Where(a => !string.IsNullOrWhiteSpace(a?.Name)).Select(a => a.Name.Trim()).ToList();
+            if (names == null || names.Count == 0)
+            {
+                return null;
+            }
+            string authors = string.Join(", ", names);
+            return string.IsNullOrWhiteSpace(definition.License) ? authors : $"{authors} ({definition.License.Trim()})";
+        }
+
         private static CaptureRecipe TryFindRecipe(string content, string recipeId)
         {
             try
@@ -574,7 +593,7 @@ namespace Greenshot.Recipes.Views
             ApprovalMode = RecipeApprovalMode.ValidationError;
             InitializeComponent();
 
-            RecipeName = recipe?.Name ?? (File.Exists(filePath) ? Path.GetFileName(filePath) : Texts.Recipe.ApprovalUnknownRecipe);
+            RecipeName = recipe?.DisplayName ?? (File.Exists(filePath) ? Path.GetFileName(filePath) : Texts.Recipe.ApprovalUnknownRecipe);
             RecipeVersion = string.IsNullOrWhiteSpace(recipe?.Version) ? "" : $"v{recipe.Version}";
             RecipeDescription = string.IsNullOrWhiteSpace(recipe?.Description) ? Texts.Recipe.ApprovalFailedValidation : recipe.Description;
             RecipeId = recipe?.Id ?? Texts.Recipe.ApprovalUnknown;
@@ -670,7 +689,8 @@ namespace Greenshot.Recipes.Views
                     string label;
                     if (string.Equals(trigger.TriggerType, TriggerConfig.TypeHotkey, StringComparison.OrdinalIgnoreCase))
                     {
-                        label = "⌨ " + string.Format(Texts.Recipe.ApprovalTriggerHotkey, trigger.GetParameter<string>("Hotkey", "None"));
+                        string hotkey = trigger.GetHotkey(recipe);
+                        label = "⌨ " + string.Format(Texts.Recipe.ApprovalTriggerHotkey, string.IsNullOrEmpty(hotkey) ? "None" : hotkey);
                     }
                     else if (string.Equals(trigger.TriggerType, TriggerConfig.TypeContextMenu, StringComparison.OrdinalIgnoreCase))
                     {
