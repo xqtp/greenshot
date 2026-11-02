@@ -1907,6 +1907,21 @@ namespace Greenshot.Plugin.RecipeEditor
         string EditorCurrent { get; }
 
         /// <summary>
+        /// Import mode of the editor destination
+        /// </summary>
+        string EditorImportMode { get; }
+
+        /// <summary>
+        /// Surface: the capture becomes the surface (current editor) or opens as a tab (available editor)
+        /// </summary>
+        string EditorImportModeSurface { get; }
+
+        /// <summary>
+        /// Image container: the capture is added as image, the surface stays
+        /// </summary>
+        string EditorImportModeImageContainer { get; }
+
+        /// <summary>
         /// Printer Name (empty = Default Printer)
         /// </summary>
         string PrinterName { get; }
@@ -4481,5 +4496,15 @@ namespace Greenshot.Plugin.RecipeEditor
         /// Upload to Dropbox
         /// </summary>
         string SummaryDropbox { get; }
+
+        /// <summary>
+        /// Get More Recipes
+        /// </summary>
+        string ManagerBtnGetMore { get; }
+
+        /// <summary>
+        /// Opens the recipe catalog on getgreenshot.org, install a recipe there with its Install button
+        /// </summary>
+        string ManagerBtnGetMoreTooltip { get; }
     }
 }
