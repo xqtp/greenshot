@@ -36,6 +36,13 @@ Continuous builds are automatically created for every commit to the `main` branc
 - The "+" after the tabs adds a new image, its size and color are in the settings
 - Closing a window with several changed captures asks once: save all, discard all or cancel
 
+**Viewer** (#937, #1624)
+- A new destination shows the capture in a small window of its own, e.g. kept on top to compare it with the screen
+- Real size (1:1), zoom and pan with an overview, only the capture or a thin title bar, an optional border, keys for everything (H shows them)
+- Export from the viewer with the destination window of the recipes, or forward the capture to a recipe
+- Settings on the new Viewer tab
+- By @Lakritzator and @daxliniere
+
 **Emoji Support** (#358)
 - Added a new "Emoji" object type to the editor
 - Insert emojis directly into your screenshots
@@ -176,6 +183,19 @@ Continuous builds are automatically created for every commit to the `main` branc
 - Avoid quality parameter for PNG in file format handler
 - Ensures lossless PNG exports
 - By @danrhodes
+
+**Smaller PNG files**
+- PNG files, uploads, attachments and the clipboard are written as small as possible without losing anything, like optipng does
+- Images with few colors get much smaller
+- Greenshot now writes PNG, JPEG, BMP, GIF and WebP files with ImageSharp for everyone, not only for beta testers
+- For problems, greenshot.ini has OutputFilePngCompressionLevel (default 9) and ClipboardPngCompressionLevel (default 8) to save faster, and OutputFilePngPalette to turn off PNG files with a palette
+- The unused settings OptimizePNGCommand and OptimizePNGCommandArguments were removed, the External Command recipe step can still run any tool
+
+**Open image from file lists every format**
+- The dialog now also offers JPEG XR (.jxr, .hdp, .wdp, .wmp), DDS, EMF and WMF, the formats of the Windows image decoders on the PC (like HEIF, Camera RAW or JPEG XL), and "All files"
+- Images open faster and use less memory, Windows reads them; photos are turned upright by their EXIF orientation again
+- Codecs installed in Windows (e.g. HEIF, RAW or JPEG XL from the Microsoft Store) are used automatically, see [image formats](../vNext/image-formats.md)
+- JPEG, BMP, GIF and TIFF files are saved by Windows: JPEG much faster, TIFF compressed (LZW)
 
 **DIB Format** (#813)
 - Fixed GCHandle memory leak in DibFileFormatHandler

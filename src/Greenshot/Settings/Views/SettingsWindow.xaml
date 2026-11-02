@@ -533,6 +533,37 @@
                                           IsEnabled="{Binding CoreConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=OutputFileReduceColors}"/>
                             </StackPanel>
                         </GroupBox>
+
+                        <GroupBox Header="{wpf:Text Settings.ExportMetadata}">
+                            <StackPanel>
+                                <ItemsControl ItemsSource="{Binding ExportMetadataFields}" Focusable="False"
+                                              IsEnabled="{Binding CoreConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=ExportMetadata}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Label Grid.Row="0" Grid.Column="0" Content="{wpf:Text Settings.ExportMetadataAuthorName}" Target="{Binding ElementName=ExportMetadataAuthorTextBox}"/>
+                                    <TextBox x:Name="ExportMetadataAuthorTextBox" Grid.Row="0" Grid.Column="1" Text="{Binding CoreConfiguration.ExportMetadataAuthor}"
+                                             IsEnabled="{Binding CoreConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=ExportMetadataAuthor}"/>
+                                    <Label Grid.Row="1" Grid.Column="0" Content="{wpf:Text Settings.ExportMetadataCopyright}" Target="{Binding ElementName=ExportMetadataCopyrightTextBox}"/>
+                                    <TextBox x:Name="ExportMetadataCopyrightTextBox" Grid.Row="1" Grid.Column="1" Text="{Binding CoreConfiguration.ExportMetadataCopyright}"
+                                             IsEnabled="{Binding CoreConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=ExportMetadataCopyright}"/>
+                                </Grid>
+                                <TextBlock Text="{wpf:Text Settings.ExportMetadataPrivateHint}" TextWrapping="Wrap" Margin="5,0,5,5"
+                                           Foreground="{Binding Source={x:Static wpf:ThemeManager.Instance}, Path=MutedBrush}"/>
+                            </StackPanel>
+                        </GroupBox>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -769,6 +800,86 @@
                 </ScrollViewer>
             </TabItem>
             
+            <!-- Viewer Tab: how a new viewer opens -->
+            <TabItem x:Name="ViewerTabItem" Header="{wpf:Text Settings.Viewer}">
+                <ScrollViewer Style="{DynamicResource ThemedScrollViewer}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <GroupBox Header="{wpf:Text Settings.ViewerFirstSize}">
+                            <StackPanel>
+                                <CheckBox Content="{wpf:Text Settings.ViewerOpenAtRealSize}"
+                                          IsChecked="{Binding ViewerConfiguration.OpenAtRealSize, Mode=TwoWay}"
+                                          IsEnabled="{Binding ViewerConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=OpenAtRealSize}"/>
+                                <Grid Margin="20,4,0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="ViewerMaximumSizeLabel" Text="{wpf:Text Settings.ViewerMaximumSize}" VerticalAlignment="Center" Margin="0,0,12,0"
+                                               Foreground="{Binding Source={x:Static wpf:ThemeManager.Instance}, Path=ForegroundBrush}"/>
+                                    <!-- Only without the real size -->
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="IsEnabled" Value="{Binding ViewerConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=MaxWidth}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ViewerConfiguration.OpenAtRealSize}" Value="True">
+                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <TextBox Width="70" TextAlignment="Right" Text="{Binding ViewerConfiguration.MaxWidth, Mode=TwoWay}"
+                                                 ToolTip="{wpf:Text Settings.FixedCaptureSizesWidth}"
+                                                 AutomationProperties.Name="{wpf:Text Settings.FixedCaptureSizesWidth}"
+                                                 AutomationProperties.LabeledBy="{Binding ElementName=ViewerMaximumSizeLabel}"/>
+                                        <TextBlock Text="×" Margin="6,0" VerticalAlignment="Center"
+                                                   Foreground="{Binding Source={x:Static wpf:ThemeManager.Instance}, Path=ForegroundBrush}"/>
+                                        <TextBox Width="70" TextAlignment="Right" Text="{Binding ViewerConfiguration.MaxHeight, Mode=TwoWay}"
+                                                 ToolTip="{wpf:Text Settings.FixedCaptureSizesHeight}"
+                                                 AutomationProperties.Name="{wpf:Text Settings.FixedCaptureSizesHeight}"
+                                                 AutomationProperties.LabeledBy="{Binding ElementName=ViewerMaximumSizeLabel}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="{wpf:Text Settings.ViewerWindow}">
+                            <StackPanel>
+                                <CheckBox Content="{wpf:Text Core.ViewerAlwaysOnTop}"
+                                          IsChecked="{Binding ViewerConfiguration.AlwaysOnTop, Mode=TwoWay}"
+                                          IsEnabled="{Binding ViewerConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=AlwaysOnTop}"/>
+                                <CheckBox Content="{wpf:Text Core.ViewerTitleBar}"
+                                          IsChecked="{Binding ViewerConfiguration.ShowTitleBar, Mode=TwoWay}"
+                                          IsEnabled="{Binding ViewerConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=ShowTitleBar}"/>
+                                <CheckBox Content="{wpf:Text Core.ViewerMousePointer}"
+                                          IsChecked="{Binding ViewerConfiguration.ShowCursor, Mode=TwoWay}"
+                                          IsEnabled="{Binding ViewerConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=ShowCursor}"/>
+                                <CheckBox Content="{wpf:Text Core.ViewerBorder}"
+                                          IsChecked="{Binding ViewerConfiguration.ShowBorder, Mode=TwoWay}"
+                                          IsEnabled="{Binding ViewerConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=ShowBorder}"/>
+                                <CheckBox Margin="20,4,0,4" Content="{wpf:Text Settings.ViewerBorderColorFollowsTheme}"
+                                          IsChecked="{Binding ViewerConfiguration.BorderColorFollowsTheme, Mode=TwoWay}"
+                                          IsEnabled="{Binding ViewerConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=BorderColorFollowsTheme}"/>
+                                <StackPanel Margin="20,4,0,4" Orientation="Horizontal">
+                                    <TextBlock Text="{wpf:Text Settings.ViewerBorderColor}" VerticalAlignment="Center" Margin="0,0,12,0"
+                                               Foreground="{Binding Source={x:Static wpf:ThemeManager.Instance}, Path=ForegroundBrush}"/>
+                                    <!-- Choosing a color switches off the contrasting color -->
+                                    <Button Style="{StaticResource SecondaryButtonStyle}" Padding="2"
+                                            ToolTip="{wpf:Text Settings.ViewerBorderColor}"
+                                            AutomationProperties.Name="{wpf:Text Settings.ViewerBorderColor}"
+                                            AutomationProperties.HelpText="{wpf:Text Core.AccessibleChooseColor}"
+                                            IsEnabled="{Binding ViewerConfiguration, Converter={StaticResource FixedToEnabledConverter}, ConverterParameter=BorderColor}"
+                                            Click="ViewerBorderColor_Click">
+                                        <Border Width="40" Height="16" BorderThickness="1" Background="{Binding ViewerBorderBrush}"
+                                                BorderBrush="{Binding Source={x:Static wpf:ThemeManager.Instance}, Path=BorderBrush}"/>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
             <!-- Recipes Tab: the extensions (border, drop shadow, caption, ...) and the options recipes declare, one compact card each -->
             <TabItem x:Name="RecipesTabItem" Header="{wpf:Text Settings.Recipes}"
                      Visibility="{Binding HasRecipesTab, Converter={StaticResource BooleanToVisibilityConverter}}">

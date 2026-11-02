@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Greenshot - a free and open source screenshot tool
  * Copyright (C) 2007-2026 Thomas Braun, Jens Klingen, Robin Krom
  *
@@ -19,18 +19,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Greenshot.Base.Core.Enums
+namespace Greenshot.Viewer
 {
-    internal enum ExifOrientations : byte
+    /// <summary>
+    /// Handwritten partial class that pairs with the Dapplo.Ini-generated
+    /// <c>ViewerConfigurationImpl.g.cs</c> to provide the concrete implementation
+    /// of <see cref="IViewerConfiguration"/>.
+    /// </summary>
+    public partial class ViewerConfigurationImpl : IViewerConfiguration
     {
-        Unknown = 0,
-        TopLeft = 1,
-        TopRight = 2,
-        BottomRight = 3,
-        BottomLeft = 4,
-        LeftTop = 5,
-        RightTop = 6,
-        RightBottom = 7,
-        LeftBottom = 8,
     }
 }

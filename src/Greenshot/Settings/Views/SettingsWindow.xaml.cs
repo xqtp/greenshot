@@ -148,6 +148,9 @@ namespace Greenshot.Settings.Views
                 case "print":
                     SettingsTabControl.SelectedIndex = 5;
                     break;
+                case "viewer":
+                    SettingsTabControl.SelectedItem = ViewerTabItem;
+                    break;
                 case "plugin":
                 case "plugins":
                     SettingsTabControl.SelectedItem = PluginsTabItem;
@@ -379,6 +382,22 @@ namespace Greenshot.Settings.Views
         }
 
         /// <summary>
+        /// Choose the color of the viewer border
+        /// </summary>
+        private void ViewerBorderColor_Click(object sender, RoutedEventArgs e)
+        {
+            var colorPicker = new Greenshot.Editor.Views.ColorPickerWindow
+            {
+                SelectedColor = _viewModel.ViewerBorderColor,
+                Owner = this
+            };
+            if (colorPicker.ShowDialog() == true)
+            {
+                _viewModel.ViewerBorderColor = colorPicker.SelectedColor;
+            }
+        }
+
+        /// <summary>
         /// Choose the color of a new image in the editor
         /// </summary>
         private void NewImageColor_Click(object sender, RoutedEventArgs e)
@@ -488,6 +507,8 @@ namespace Greenshot.Settings.Views
 #if !GREENSHOT_LIGHT
             _viewModel.SaveAiToolSettings();
 #endif
+
+            _viewModel.SaveExportMetadata();
 
             // Save clipboard formats
             if (_viewModel.ClipboardFormats != null)

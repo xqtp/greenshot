@@ -232,6 +232,46 @@ namespace Greenshot.Base.Languages
         string DestinationPrinter { get; }
 
         /// <summary>
+        /// Show in a viewer
+        /// </summary>
+        string DestinationViewer { get; }
+
+        /// <summary>
+        /// Viewer
+        /// </summary>
+        string Viewer { get; }
+
+        /// <summary>
+        /// Size of a new viewer
+        /// </summary>
+        string ViewerFirstSize { get; }
+
+        /// <summary>
+        /// Real size (1:1), at most as big as the screen
+        /// </summary>
+        string ViewerOpenAtRealSize { get; }
+
+        /// <summary>
+        /// Otherwise at most (pixels)
+        /// </summary>
+        string ViewerMaximumSize { get; }
+
+        /// <summary>
+        /// Viewer window
+        /// </summary>
+        string ViewerWindow { get; }
+
+        /// <summary>
+        /// Border color contrasting with the light or dark mode
+        /// </summary>
+        string ViewerBorderColorFollowsTheme { get; }
+
+        /// <summary>
+        /// Border color
+        /// </summary>
+        string ViewerBorderColor { get; }
+
+        /// <summary>
         /// Available
         /// </summary>
         string DestinationAvailable { get; }
@@ -769,6 +809,51 @@ namespace Greenshot.Base.Languages
         /// Reduce the amount of colors to a maximum of 256
         /// </summary>
         string Reducecolors { get; }
+
+        /// <summary>
+        /// Details in saved images
+        /// </summary>
+        string ExportMetadata { get; }
+
+        /// <summary>
+        /// When the screen was captured
+        /// </summary>
+        string ExportMetadataCapturetime { get; }
+
+        /// <summary>
+        /// Author and copyright
+        /// </summary>
+        string ExportMetadataAuthor { get; }
+
+        /// <summary>
+        /// Window title and web address (private)
+        /// </summary>
+        string ExportMetadataSource { get; }
+
+        /// <summary>
+        /// Recognized text, when OCR already ran (private)
+        /// </summary>
+        string ExportMetadataText { get; }
+
+        /// <summary>
+        /// Content of barcodes and QR codes (private)
+        /// </summary>
+        string ExportMetadataBarcodes { get; }
+
+        /// <summary>
+        /// Author
+        /// </summary>
+        string ExportMetadataAuthorName { get; }
+
+        /// <summary>
+        /// Copyright
+        /// </summary>
+        string ExportMetadataCopyright { get; }
+
+        /// <summary>
+        /// Files saved on this computer get the private details. Before they go anywhere else (upload, e-mail, Office), Greenshot asks whether to remove them.
+        /// </summary>
+        string ExportMetadataPrivateHint { get; }
 
         /// <summary>
         /// Register Hotkeys
