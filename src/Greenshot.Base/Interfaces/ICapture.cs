@@ -23,6 +23,8 @@ using System;
 using System.Drawing;
 using Dapplo.Windows.Common.Structs;
 using Dapplo.Windows.Icons;
+using Greenshot.Base.Core;
+using Greenshot.Base.Hdr;
 
 namespace Greenshot.Base.Interfaces
 {
@@ -42,7 +44,19 @@ namespace Greenshot.Base.Interfaces
         Image Image { get; set; }
 
         /// <summary>
-        /// Null the image
+        /// The HDR image of the capture on an HDR display (see HdrImage), null without one. Owned by the capture: set disposes the previous one,
+        /// the surface takes it over together with the image (see NullImage).
+        /// </summary>
+        HdrImage HdrImage { get; set; }
+
+        /// <summary>
+        /// The HDR images of the HDR displays of a screen capture which aren't joined into HdrImage yet (e.g. of the frozen screen while the
+        /// region is selected), null without them: Crop joins only the area, reading HdrImage joins all of it. Owned by the capture.
+        /// </summary>
+        HdrParts HdrParts { get; set; }
+
+        /// <summary>
+        /// Null the image and the HDR image without disposing them: the surface took them over
         /// </summary>
         void NullImage();
 
@@ -85,7 +99,7 @@ namespace Greenshot.Base.Interfaces
         void MoveMouseLocation(int x, int y);
 
         /// <summary>
-        /// Creates a deep copy of the capture, cloning its image, cursor, and capture details.
+        /// Creates a deep copy of the capture, cloning its image, cursor, and capture details; the HDR image is shared (it is never changed).
         /// </summary>
         ICapture Clone();
     }
