@@ -29,6 +29,7 @@ using Dapplo.Ini.Interfaces;
 using Dapplo.Ini.Parsing;
 using Dapplo.Windows.Common.Structs;
 using Dapplo.Windows.User32.Enums;
+using Greenshot.Base.Core.Enums;
 using Greenshot.Base.Effects;
 using Greenshot.Editor.Drawing;
 
@@ -70,6 +71,10 @@ namespace Greenshot.Editor.Configuration
         [Description("Position of normal window")]
         [DefaultValue("100,100,400,400")]
         NativeRect WindowNormalPosition { get; set; }
+
+        [Description("The colors of the editor window: Light, Dark or System (follow the Windows app mode). The capture is never changed. A high contrast theme of Windows always wins.")]
+        [DefaultValue("Light")]
+        UiTheme EditorTheme { get; set; }
 
         [Description("Show the captures of an editor window as tabs, when false every capture gets its own window")]
         [DefaultValue(true)]
@@ -153,5 +158,17 @@ namespace Greenshot.Editor.Configuration
         [IniValue(ListDelimiter = '|')]
         [Description("Emoji picked recently, newest first")]
         List<string> RecentEmojis { get; set; }
+
+        [Description("Width of the panel area at the right of the canvas, in pixels at 100% (96 DPI)")]
+        [DefaultValue(320)]
+        int EditorPanelWidth { get; set; }
+
+        [Description("The panel which was shown last in the panel area of the editor, e.g. Greenshot.Selection")]
+        [DefaultValue("Greenshot.Selection")]
+        string SelectedEditorPanel { get; set; }
+
+        [IniValue(ListDelimiter = '|')]
+        [Description("The sections of the Selection panel which the user collapsed, e.g. Greenshot.SizeAndPosition")]
+        List<string> CollapsedEditorSections { get; set; }
     }
 }
