@@ -36,8 +36,10 @@ work differently there, and they can still change before the release. The docume
 | [capture-tools.md](capture-tools.md) | How the capture modes and helpers are built, and how a plugin adds its own |
 | [notifications.md](notifications.md) | Notifications: toasts and the tray icon |
 | [http.md](http.md) | Talking to services on the Internet with `HttpService` |
+| [destination-definitions.md](destination-definitions.md) | Destinations made of code plus definitions (data), like the custom uploader |
 | [greenshot-proxy-and-integration.md](greenshot-proxy-and-integration.md) | The native proxy, IPC, command line and the browser extension |
 | [async-threading-roadmap.md](async-threading-roadmap.md) | The threading model and the async rules |
 | [recipe-contracts-cli-query-plan.md](recipe-contracts-cli-query-plan.md) | Plan: recipe contracts, CLI queries and error handling |
+| [expression-engine.md](expression-engine.md) | Design: one syntax and one resolver for variables (`${...}`) in settings, recipes and plugins |
 | [recipe.schema.json](recipe.schema.json), [examples](examples) | The JSON schema of recipes and example recipes; more recipes are in [greenshot/greenshot-recipes](https://github.com/greenshot/greenshot-recipes) |
 | [upstream](upstream/wpf-notifyicon-prompt.md) | Changes Greenshot would like in libraries it uses |

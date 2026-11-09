@@ -19,25 +19,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Greenshot.Base.Core.Enums
-{
-    /// <summary>
-    /// Specifies which culture to use for date/time formatting in pattern replacement.
-    /// </summary>
-    public enum DateCultureMode
-    {
-        /// <summary>
-        /// Use the system's current culture (Windows locale settings).
-        /// This is the default for backward compatibility, especially for filename generation
-        /// where users may rely on existing locale-based formatting.
-        /// </summary>
-        SystemLocale,
+using System;
 
-        /// <summary>
-        /// Use Greenshot's configured UI language for date/time formatting.
-        /// This is preferred for user-visible text like print footers and email subjects
-        /// where consistency with the application's language is expected.
-        /// </summary>
-        UILanguage
+namespace Greenshot.Base.Definitions;
+
+/// <summary>
+/// A definition file which can't be used; the message is for the user (translated).
+/// </summary>
+public class DefinitionFileException : Exception
+{
+    public DefinitionFileException(string message) : base(message)
+    {
+    }
+
+    public DefinitionFileException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }
