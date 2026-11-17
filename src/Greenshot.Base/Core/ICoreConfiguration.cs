@@ -94,10 +94,18 @@ namespace Greenshot.Base.Core
         [DefaultValue(false)]
         bool CaptureWindowsInteractive { get; set; }
 
-        [Description("Capture delay in milliseconds.")]
-        [DefaultValue(100)]
-        [Range(0, int.MaxValue, ErrorMessage = "CaptureDelay must be non-negative.")]
-        int CaptureDelay { get; set; }
+        [Description("Wait before every capture of the screen (hotkey, menu, command line, recipes), e.g. to open a menu or popup first. Replaces CaptureDelay.")]
+        [DefaultValue(false)]
+        bool CaptureWait { get; set; }
+
+        [Description("Milliseconds to wait before every capture of the screen when CaptureWait is on, 0 to 600000.")]
+        [DefaultValue(3000)]
+        [Range(0, 600000, ErrorMessage = "CaptureWaitMilliseconds must be 0 to 600000.")]
+        int CaptureWaitMilliseconds { get; set; }
+
+        [Description("Show a countdown, with Cancel, during the wait before the capture (only for a wait of a second or more, never when started unattended).")]
+        [DefaultValue(true)]
+        bool CaptureWaitCountdown { get; set; }
 
         [Description("Semicolon-separated list of explicit recipe file paths to load. Automatic directory scanning is disabled for security.")]
         [DefaultValue(null)]
@@ -342,9 +350,6 @@ namespace Greenshot.Base.Core
         [PolicyCategory(PolicyCategories.Common)]
         bool HideExpertSettings { get; set; }
 
-        [Description("Enable/disable thumbnail previews")]
-        [DefaultValue(true)]
-        bool ThumnailPreview { get; set; }
 
         [Description("Make some optimizations for usage with remote desktop")]
         [DefaultValue(false)]
@@ -378,7 +383,7 @@ namespace Greenshot.Base.Core
         [DefaultValue(true)]
         bool PrewarmEditor { get; set; }
 
-        [Description("The most memory in MB which the reusable buffer pools keep when they're not in use (each, for small blocks and for large buffers). 0 means no limit, otherwise 4 to 1024. Takes effect after a restart.")]
+        [Description("The most memory in MB which the reusable buffer pools keep when they're not in use (each, for small blocks, for large buffers and for image buffers). 0 means no limit, otherwise 4 to 1024. Takes effect after a restart.")]
         [DefaultValue(0)]
         int BufferPoolLimit { get; set; }
 
@@ -386,7 +391,7 @@ namespace Greenshot.Base.Core
         [DefaultValue(false)]
         bool EnableUiStallWatchdog { get; set; }
 
-        [Description("Also check for unstable version updates")]
+        [Description("A released version also offers unstable (beta) versions as updates. An unstable version always offers newer unstable and released versions.")]
         [DefaultValue(false)]
         [PolicyCategory(PolicyCategories.Common)]
         bool CheckForUnstable { get; set; }

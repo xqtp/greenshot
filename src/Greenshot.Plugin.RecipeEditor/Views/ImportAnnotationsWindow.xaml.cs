@@ -29,6 +29,7 @@ using System.Windows.Input;
 using Greenshot.Base.Languages;
 using Greenshot.Base.Wpf;
 using Greenshot.Plugin.RecipeEditor.Helpers;
+using Greenshot.Base.Core;
 
 namespace Greenshot.Plugin.RecipeEditor.Views
 {
@@ -83,7 +84,7 @@ namespace Greenshot.Plugin.RecipeEditor.Views
             }
             DirectoryTextBox.Text = defaultDir;
 
-            string safeRecipeName = string.Join("_", (string.IsNullOrWhiteSpace(recipeName) ? "annotation" : recipeName).Split(Path.GetInvalidFileNameChars()));
+            string safeRecipeName = FilenameHelper.MakeFilenameSafe(string.IsNullOrWhiteSpace(recipeName) ? "annotation" : recipeName);
             BaseFileNameTextBox.Text = safeRecipeName;
 
             SourceInitialized += (s, e) => ApplyImmersiveDarkMode();
@@ -108,8 +109,8 @@ namespace Greenshot.Plugin.RecipeEditor.Views
             if (AppendCard != null && ReplaceCard != null)
             {
                 bool isAppend = AppendRadio.IsChecked == true;
-                AppendCard.BorderBrush = isAppend ? WpfThemeHelper.Accent : WpfThemeHelper.CardBorder;
-                ReplaceCard.BorderBrush = !isAppend ? WpfThemeHelper.Accent : WpfThemeHelper.CardBorder;
+                AppendCard.BorderBrush = isAppend ? ThemeManager.Instance.CurrentPalette.Accent : ThemeManager.Instance.CurrentPalette.CardBorder;
+                ReplaceCard.BorderBrush = !isAppend ? ThemeManager.Instance.CurrentPalette.Accent : ThemeManager.Instance.CurrentPalette.CardBorder;
             }
         }
 
