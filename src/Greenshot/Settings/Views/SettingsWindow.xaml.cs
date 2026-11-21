@@ -35,8 +35,10 @@ using Greenshot.Base.Core;
 using Greenshot.Base.Interfaces;
 using Greenshot.Base.Wpf;
 using Greenshot.Capturing.Tools;
+using Greenshot.Base.Controls;
 using Greenshot.Helpers;
 using Greenshot.Base.Languages;
+using Greenshot.Recipes;
 using Greenshot.Recipes.Triggers;
 using Greenshot.Recipes.Views;
 using Greenshot.Settings.ViewModels;
@@ -56,6 +58,7 @@ namespace Greenshot.Settings.Views
     {
         private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(typeof(SettingsWindow));
         private readonly SettingsViewModel _viewModel;
+        private bool _applied;
 
         public SettingsWindow(string initialPluginName = null, string initialTabName = null)
         {
@@ -201,9 +204,17 @@ namespace Greenshot.Settings.Views
                 ShowInput(invalidInput);
                 return;
             }
-            HotkeyManager.UnregisterHotkeys();
-            SaveSettings();
-            TriggerManager.Instance.RestartHotkeyTriggers();
+            // "Send it to:" with nothing ticked: a capture would go nowhere, the tab says so in red
+            if (_viewModel.IsSendToEmpty)
+            {
+                ShowInput(SendToRadioButton);
+                return;
+            }
+            // A changed setting (a hotkey, a trigger's condition or the language): only the triggers which differ now are registered again
+            if (SaveSettings())
+            {
+                TriggerManager.Instance.SyncRecipeTriggers(RecipeManager.Instance.GetAllRecipes());
+            }
 
             var shell = SimpleServiceProvider.Current.GetInstance<IGreenshotShell>(isOptional: true);
             shell?.UpdateUi();
@@ -285,10 +296,10 @@ namespace Greenshot.Settings.Views
 
         private void BrowseStorageLocation_Click(object sender, RoutedEventArgs e)
         {
-            string selectedPath = ModernFolderPicker.SelectFolder(
+            string selectedPath = FileDialogs.PickFolder(
                 this,
-                Base.Expressions.OutputTemplates.RenderFolder(_viewModel.CoreConfiguration.OutputDirectory, Base.Expressions.VariableScope.Empty, out _),
-                Texts.Settings.Storagelocation);
+                Texts.Settings.Storagelocation,
+                Base.Expressions.OutputTemplates.RenderFolder(_viewModel.CoreConfiguration.OutputDirectory, Base.Expressions.VariableScope.Empty, out _));
 
             if (!string.IsNullOrEmpty(selectedPath))
             {
@@ -512,7 +523,8 @@ namespace Greenshot.Settings.Views
             AddFixedCaptureSizeButton.Focus();
         }
 
-        private void SaveSettings()
+        /// <returns>true when a setting of the drafts or the language changed</returns>
+        private bool SaveSettings()
         {
             // Save destinations
             var destinations = new List<string>();
@@ -529,10 +541,7 @@ namespace Greenshot.Settings.Views
                 }
 
                 // Keep the destinations which aren't there right now, e.g. of a plugin which isn't loaded
-                destinations.AddRange(_viewModel.CoreConfiguration.OutputDestinations?
-                    .Where(designation => designation != nameof(WellKnownDestinations.Picker)
-                                          && _viewModel.Destinations.All(d => !string.Equals(d.Designation, designation, StringComparison.OrdinalIgnoreCase)))
-                    ?? Enumerable.Empty<string>());
+                destinations.AddRange(_viewModel.KeptOutputDestinations());
             }
             
             _viewModel.CoreConfiguration.OutputDestinations = destinations;
@@ -570,8 +579,39 @@ namespace Greenshot.Settings.Views
                 }
             }
             
-            // Force save of all configuration sections
-            IniConfigRegistry.Get()?.Save();
+            // The drafts the window changed: their changed keys go to the live sections at once, saved once
+            bool applied = false;
+            try
+            {
+                applied = _viewModel.Drafts.Apply();
+            }
+            catch (AccessViolationException ex)
+            {
+                // An administrator locked a key while the window was open: Dapplo.Ini checks all locks first, nothing was written
+                Log.Warn("The settings couldn't be applied, a setting was locked meanwhile", ex);
+            }
+            _applied = true;
+
+            // The recipe options, the theme and the language are written live: saved now, but only when one of them changed
+            var config = IniConfigRegistry.Get();
+            if (config != null && config.HasPendingChanges())
+            {
+                config.Save();
+            }
+
+            return applied || _viewModel.LanguageChanged;
+        }
+
+        /// <summary>
+        /// Closed without OK (Cancel, X, Esc): the drafts are dropped with the view model, only theme and language were shown live
+        /// </summary>
+        protected override void OnClosed(EventArgs e)
+        {
+            if (!_applied)
+            {
+                _viewModel.RevertPreviews();
+            }
+            base.OnClosed(e);
         }
 
         /// <summary>

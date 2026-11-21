@@ -322,9 +322,9 @@ namespace Greenshot.Base.Languages
         string DestinationSendTo { get; }
 
         /// <summary>
-        /// Nothing is ticked, so the capture opens in the editor.
+        /// Tick at least one destination, or choose "Ask for destination every time".
         /// </summary>
-        string DestinationSendToNone { get; }
+        string DestinationSendToRequired { get; }
 
         /// <summary>
         /// Destinations Greenshot offers
@@ -781,6 +781,11 @@ namespace Greenshot.Base.Languages
         /// The hotkey is written in the recipe file, it is changed in the recipe editor
         /// </summary>
         string HotkeySetInRecipe { get; }
+
+        /// <summary>
+        /// A hotkey on the General tab is also the hotkey of another recipe ({0}: its name), only one of them can work
+        /// </summary>
+        string HotkeyConflict { get; }
 
         /// <summary>
         /// Choose a folder
